@@ -87,12 +87,12 @@ export default function TrainerDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-6 gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Panel de Entrenador</h1>
-              <p className="text-gray-600">Bienvenido, {profile?.full_name}</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Panel de Entrenador</h1>
+              <p className="text-sm sm:text-base text-gray-600">Bienvenido, {profile?.full_name}</p>
             </div>
-            <Button variant="outline" onClick={signOut}>
+            <Button variant="outline" onClick={signOut} className="w-full sm:w-auto">
               <LogOut className="w-4 h-4 mr-2" />
               Cerrar Sesión
             </Button>
@@ -100,26 +100,26 @@ export default function TrainerDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Clientes</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{clients.length}</div>
+              <div className="text-xl sm:text-2xl font-bold">{clients.length}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clientes Activos</CardTitle>
-              <Users className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-xs sm:text-sm font-medium">Clientes Activos</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {clients.filter(c => c?.active).length}
               </div>
             </CardContent>
@@ -127,11 +127,11 @@ export default function TrainerDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clientes Inactivos</CardTitle>
-              <Users className="h-4 w-4 text-red-600" />
+              <CardTitle className="text-xs sm:text-sm font-medium">Clientes Inactivos</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl sm:text-2xl font-bold">
                 {clients.filter(c => !c?.active).length}
               </div>
             </CardContent>
@@ -143,74 +143,95 @@ export default function TrainerDashboard() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Gestión de Clientes</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Gestión de Clientes</CardTitle>
+                <CardDescription className="text-sm">
                   Administra el acceso de tus clientes y sus rutinas
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 sm:px-6">
             {clients.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No hay clientes registrados aún</p>
-                <p className="text-sm text-gray-400">Los clientes aparecerán aquí cuando se registren</p>
+              <div className="text-center py-6 sm:py-8">
+                <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 text-sm sm:text-base">No hay clientes registrados aún</p>
+                <p className="text-xs sm:text-sm text-gray-400">Los clientes aparecerán aquí cuando se registren</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {clients.map((client) => (
-                  <div key={client.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-medium">
+                  <div key={client.id} className="border rounded-lg p-3 sm:p-4">
+                    {/* Info del cliente */}
+                    <div className="flex items-start space-x-3 mb-3 sm:mb-4">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-blue-600 font-medium text-sm sm:text-base">
                           {client?.full_name?.[0]?.toUpperCase() || 'C'}
                         </span>
                       </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">
                           {client?.full_name || 'Sin nombre'}
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs sm:text-sm text-gray-500 truncate">
                           {client?.email || 'Sin email'}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-400 hidden sm:block">
                           Registrado: {client?.created_at ? new Date(client.created_at).toLocaleDateString() : 'Fecha desconocida'}
                         </p>
                       </div>
+                      {/* Badge de estado - Solo en desktop */}
+                      <div className="hidden sm:block">
+                        <Badge variant={client?.active ? "default" : "secondary"}>
+                          {client?.active ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </div>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                      <Badge variant={client?.active ? "default" : "secondary"}>
-                        {client?.active ? 'Activo' : 'Inactivo'}
-                      </Badge>
+                    {/* Controles - Layout responsive */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      {/* Primera fila en móvil: Estado y Toggle */}
+                      <div className="flex items-center justify-between sm:justify-start sm:space-x-4">
+                        {/* Badge visible en móvil */}
+                        <Badge 
+                          variant={client?.active ? "default" : "secondary"}
+                          className="text-xs sm:hidden"
+                        >
+                          {client?.active ? 'Activo' : 'Inactivo'}
+                        </Badge>
 
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">Acceso:</span>
-                        <Switch
-                          checked={client?.active || false}
-                          onCheckedChange={() => 
-                            toggleClientStatus(client.id, client?.active || false)
-                          }
-                        />
+                        {/* Toggle de acceso */}
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs sm:text-sm text-gray-600">Acceso:</span>
+                          <Switch
+                            checked={client?.active || false}
+                            onCheckedChange={() => 
+                              toggleClientStatus(client.id, client?.active || false)
+                            }
+                          />
+                        </div>
                       </div>
 
-                      <div className="flex space-x-2">
+                      {/* Segunda fila en móvil: Botones de acción */}
+                      <div className="flex space-x-2 w-full sm:w-auto">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => router.push(`/trainer/client/${client.id}/routines`)}
+                          className="flex-1 sm:flex-none text-xs sm:text-sm"
                         >
-                          <Calendar className="w-4 h-4 mr-1" />
-                          Rutinas
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <span className="hidden sm:inline">Rutinas</span>
+                          <span className="sm:hidden">Rutinas</span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => router.push(`/trainer/client/${client.id}/meals`)}
+                          className="flex-1 sm:flex-none text-xs sm:text-sm"
                         >
-                          <Utensils className="w-4 h-4 mr-1" />
-                          Alimentación
+                          <Utensils className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                          <span className="hidden sm:inline">Alimentación</span>
+                          <span className="sm:hidden">Alimentación</span>
                         </Button>
                       </div>
                     </div>

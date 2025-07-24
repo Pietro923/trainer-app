@@ -189,12 +189,12 @@ export default function ClientDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-6 gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Mi Entrenamiento</h1>
-              <p className="text-gray-600">Bienvenido, {profile?.full_name}</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Mi Entrenamiento</h1>
+              <p className="text-sm sm:text-base text-gray-600">Bienvenido, {profile?.full_name}</p>
             </div>
-            <Button variant="outline" onClick={signOut}>
+            <Button variant="outline" onClick={signOut} className="w-full sm:w-auto">
               <LogOut className="w-4 h-4 mr-2" />
               Cerrar Sesión
             </Button>
@@ -202,35 +202,35 @@ export default function ClientDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Week Calendar */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="w-5 h-5 mr-2" />
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="pb-3 sm:pb-6">
+            <CardTitle className="flex items-center text-lg sm:text-xl">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Calendario Semanal
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Selecciona un día para ver tus rutinas y plan alimenticio
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-2">
+          <CardContent className="px-3 sm:px-6">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
               {DAYS_OF_WEEK.map(day => (
                 <Button
                   key={day.value}
                   variant={selectedDay === day.value ? "default" : "outline"}
-                  className="flex flex-col py-4 h-auto"
+                  className="flex flex-col py-2 sm:py-4 h-auto text-xs sm:text-sm px-1 sm:px-3"
                   onClick={() => setSelectedDay(day.value)}
                 >
-                  <span className="text-xs font-medium">{day.short}</span>
-                  <span className="text-lg font-bold">{day.value === new Date().getDay() ? 'HOY' : ''}</span>
+                  <span className="font-medium mb-1">{day.short}</span>
+                  <span className="text-xs font-bold">{day.value === new Date().getDay() ? 'HOY' : ''}</span>
                   <div className="flex space-x-1 mt-1">
                     {routines.filter(r => r.week_day === day.value).length > 0 && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>
                     )}
                     {mealPlans.filter(m => m.day_of_week === day.value).length > 0 && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></div>
                     )}
                   </div>
                 </Button>
@@ -394,12 +394,12 @@ export default function ClientDashboard() {
 
       {/* Modal para mostrar medios */}
       <Dialog open={mediaModal.isOpen} onOpenChange={closeMediaModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-auto p-3 sm:p-6">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">
               {mediaModal.type === 'video' ? '📹 Video' : '🖼️ Imagen'} - {mediaModal.exerciseName}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Material de apoyo para el ejercicio
             </DialogDescription>
           </DialogHeader>
@@ -421,7 +421,7 @@ export default function ClientDashboard() {
               <img 
                 src={mediaModal.url} 
                 alt={mediaModal.exerciseName}
-                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                className="max-w-full max-h-[50vh] sm:max-h-[70vh] object-contain rounded-lg"
                 onError={(e) => {
                   console.error('Error loading image:', e)
                   e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzlhYTJhZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkVycm9yIGNhcmdhbmRvIGltYWdlbjwvdGV4dD4KICA8L3N2Zz4K'
@@ -434,6 +434,7 @@ export default function ClientDashboard() {
             <Button 
               variant="outline" 
               onClick={() => window.open(mediaModal.url, '_blank')}
+              className="text-sm w-full sm:w-auto"
             >
               Abrir en nueva pestaña
             </Button>
