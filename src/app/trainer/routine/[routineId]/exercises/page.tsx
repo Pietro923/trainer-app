@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Plus, Dumbbell, Edit, Trash2, GripVertical } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import CreateExerciseForm from '@/components/CreateExerciseForm'
+import EditExerciseForm from '@/components/EditExerciseForm'
 
 type RoutineWithClient = Routine & {
   client: Profile
@@ -27,6 +28,8 @@ export default function RoutineExercises() {
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [loading, setLoading] = useState(true)
   const [createExerciseOpen, setCreateExerciseOpen] = useState(false)
+  const [editExerciseOpen, setEditExerciseOpen] = useState(false)
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null)
 
   useEffect(() => {
     if (!user || profile?.role !== 'trainer') {
@@ -65,6 +68,17 @@ export default function RoutineExercises() {
   const handleExerciseCreated = () => {
     setCreateExerciseOpen(false)
     fetchRoutineData()
+  }
+
+  const handleExerciseUpdated = () => {
+    setEditExerciseOpen(false)
+    setEditingExercise(null)
+    fetchRoutineData()
+  }
+
+  const openEditDialog = (exercise: Exercise) => {
+    setEditingExercise(exercise)
+    setEditExerciseOpen(true)
   }
 
   const deleteExercise = async (exerciseId: string) => {
@@ -182,6 +196,24 @@ export default function RoutineExercises() {
                 />
               </DialogContent>
             </Dialog>
+
+            {/* Dialog para editar ejercicio */}
+            <Dialog open={editExerciseOpen} onOpenChange={setEditExerciseOpen}>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Editar Ejercicio</DialogTitle>
+                  <DialogDescription>
+                    Modifica los detalles del ejercicio "{editingExercise?.name}"
+                  </DialogDescription>
+                </DialogHeader>
+                {editingExercise && (
+                  <EditExerciseForm 
+                    exercise={editingExercise}
+                    onExerciseUpdated={handleExerciseUpdated} 
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </header>
@@ -243,7 +275,11 @@ export default function RoutineExercises() {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => openEditDialog(exercise)}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button 

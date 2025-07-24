@@ -62,11 +62,15 @@ export default function TrainerDashboard() {
 
       if (error) {
         console.error('Error updating client status:', error)
+        alert('Error al actualizar el estado del cliente')
       } else {
-        fetchClients()
+        console.log(`Cliente ${clientId} ${!currentStatus ? 'activado' : 'desactivado'}`)
+        // Refrescar la lista de clientes
+        await fetchClients()
       }
     } catch (error) {
       console.error('Error:', error)
+      alert('Error al actualizar el estado del cliente')
     }
   }
 

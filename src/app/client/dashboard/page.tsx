@@ -8,7 +8,8 @@ import { supabase, Routine, Exercise, MealPlan } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Dumbbell, Utensils, LogOut, Clock } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Calendar, Dumbbell, Utensils, LogOut, Clock, Play, Image as ImageIcon } from 'lucide-react'
 
 type RoutineWithExercises = Routine & {
   exercises: Exercise[]
@@ -31,6 +32,17 @@ export default function ClientDashboard() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay())
+  const [mediaModal, setMediaModal] = useState<{
+    isOpen: boolean
+    type: 'image' | 'video' | null
+    url: string
+    exerciseName: string
+  }>({
+    isOpen: false,
+    type: null,
+    url: '',
+    exerciseName: ''
+  })
 
   useEffect(() => {
     if (!user || profile?.role !== 'client') {
@@ -94,6 +106,71 @@ export default function ClientDashboard() {
 
   const getCurrentDayName = () => {
     return DAYS_OF_WEEK.find(day => day.value === selectedDay)?.label || 'Hoy'
+  }
+
+  const renderExerciseMedia = (exercise: Exercise) => {
+    const hasVideo = exercise.video_url
+    const hasImage = exercise.image_url
+
+    if (!hasVideo && !hasImage) return null
+
+    const openMedia = (type: 'image' | 'video', url: string) => {
+      setMediaModal({
+        isOpen: true,
+        type,
+        url,
+        exerciseName: exercise.name
+      })
+    }
+
+    return (
+      <div className="mt-2 flex flex-wrap gap-2">
+        {hasVideo && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openMedia('video', exercise.video_url!)}
+            className="text-xs"
+          >
+            <Play className="w-3 h-3 mr-1" />
+            Ver Video
+          </Button>
+        )}
+        {hasImage && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openMedia('image', exercise.image_url!)}
+            className="text-xs"
+          >
+            <ImageIcon className="w-3 h-3 mr-1" />
+            Ver Imagen
+          </Button>
+        )}
+      </div>
+    )
+  }
+
+  const closeMediaModal = () => {
+    setMediaModal({
+      isOpen: false,
+      type: null,
+      url: '',
+      exerciseName: ''
+    })
+  }
+
+  const getEmbedUrl = (url: string) => {
+    // Convertir URL de YouTube a formato embed
+    if (url.includes('youtube.com/watch?v=')) {
+      const videoId = url.split('v=')[1]?.split('&')[0]
+      return `https://www.youtube.com/embed/${videoId}`
+    }
+    if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1]?.split('?')[0]
+      return `https://www.youtube.com/embed/${videoId}`
+    }
+    return url
   }
 
   if (loading) {
@@ -202,23 +279,26 @@ export default function ClientDashboard() {
                           {routine.exercises
                             .sort((a, b) => a.exercise_order - b.exercise_order)
                             .map((exercise, index) => (
-                            <div key={exercise.id} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
-                              <div>
-                                <span className="font-medium">{index + 1}. {exercise.name}</span>
-                                {exercise.notes && (
-                                  <p className="text-sm text-gray-600">{exercise.notes}</p>
-                                )}
-                              </div>
-                              <div className="text-right text-sm">
-                                {exercise.sets && exercise.reps && (
-                                  <div className="font-medium">{exercise.sets}x{exercise.reps}</div>
-                                )}
-                                {exercise.weight && (
-                                  <div className="text-gray-600">{exercise.weight}</div>
-                                )}
-                                {exercise.rest_time && (
-                                  <div className="text-xs text-gray-500">Descanso: {exercise.rest_time}</div>
-                                )}
+                            <div key={exercise.id} className="py-2 px-3 bg-gray-50 rounded">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <span className="font-medium">{index + 1}. {exercise.name}</span>
+                                  {exercise.notes && (
+                                    <p className="text-sm text-gray-600 mt-1">{exercise.notes}</p>
+                                  )}
+                                  {renderExerciseMedia(exercise)}
+                                </div>
+                                <div className="text-right text-sm ml-4">
+                                  {exercise.sets && exercise.reps && (
+                                    <div className="font-medium">{exercise.sets}x{exercise.reps}</div>
+                                  )}
+                                  {exercise.weight && (
+                                    <div className="text-gray-600">{exercise.weight}</div>
+                                  )}
+                                  {exercise.rest_time && (
+                                    <div className="text-xs text-gray-500">Descanso: {exercise.rest_time}</div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -311,6 +391,55 @@ export default function ClientDashboard() {
           </Card>
         </div>
       </main>
+
+      {/* Modal para mostrar medios */}
+      <Dialog open={mediaModal.isOpen} onOpenChange={closeMediaModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {mediaModal.type === 'video' ? '📹 Video' : '🖼️ Imagen'} - {mediaModal.exerciseName}
+            </DialogTitle>
+            <DialogDescription>
+              Material de apoyo para el ejercicio
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex justify-center">
+            {mediaModal.type === 'video' ? (
+              <div className="w-full aspect-video">
+                <iframe
+                  src={getEmbedUrl(mediaModal.url)}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg"
+                ></iframe>
+              </div>
+            ) : (
+              <img 
+                src={mediaModal.url} 
+                alt={mediaModal.exerciseName}
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                onError={(e) => {
+                  console.error('Error loading image:', e)
+                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzlhYTJhZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkVycm9yIGNhcmdhbmRvIGltYWdlbjwvdGV4dD4KICA8L3N2Zz4K'
+                }}
+              />
+            )}
+          </div>
+
+          <div className="flex justify-center mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.open(mediaModal.url, '_blank')}
+            >
+              Abrir en nueva pestaña
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
