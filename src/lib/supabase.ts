@@ -8,6 +8,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Types
 export type Profile = {
+  client: any
   id: string
   email: string | null
   full_name: string | null
@@ -52,12 +53,5 @@ export type MealPlan = {
   meal_type: 'desayuno' | 'almuerzo' | 'merienda' | 'cena' | 'colacion'
   description: string
   active: boolean
-  created_at: string
-}
-
-export type TrainerClient = {
-  id: string
-  trainer_id: string
-  client_id: string
   created_at: string
 }

@@ -9,24 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Users, Calendar, Utensils, LogOut } from 'lucide-react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import AddClientForm from '@/components/AddClientForm'
-
-type ClientWithProfile = {
-  id: string
-  trainer_id: string
-  client_id: string
-  created_at: string
-  client: Profile
-}
+import { Users, Calendar, Utensils, LogOut } from 'lucide-react'
 
 export default function TrainerDashboard() {
   const { user, profile, signOut } = useAuth()
   const router = useRouter()
-  const [clients, setClients] = useState<ClientWithProfile[]>([])
+  const [clients, setClients] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
-  const [addClientOpen, setAddClientOpen] = useState(false)
 
   useEffect(() => {
     if (!user || profile?.role !== 'trainer') {
@@ -39,17 +28,23 @@ export default function TrainerDashboard() {
   const fetchClients = async () => {
     try {
       const { data, error } = await supabase
-        .from('trainer_clients')
-        .select(`
-          *,
-          client:profiles!trainer_clients_client_id_fkey(*)
-        `)
-        .eq('trainer_id', user?.id)
+        .from('profiles')
+        .select('*')
+        .eq('role', 'client')
+        .order('created_at', { ascending: false })
 
       if (error) {
         console.error('Error fetching clients:', error)
       } else {
-        setClients(data || [])
+        console.log('Raw clients data:', data)
+        const validClients = (data || []).map(client => ({
+          ...client,
+          full_name: client.full_name || 'Sin nombre',
+          email: client.email || 'Sin email',
+          active: client.active ?? true
+        }))
+        console.log('Processed clients:', validClients)
+        setClients(validClients)
       }
     } catch (error) {
       console.error('Error:', error)
@@ -68,16 +63,11 @@ export default function TrainerDashboard() {
       if (error) {
         console.error('Error updating client status:', error)
       } else {
-        fetchClients() // Refrescar la lista
+        fetchClients()
       }
     } catch (error) {
       console.error('Error:', error)
     }
-  }
-
-  const handleClientAdded = () => {
-    setAddClientOpen(false)
-    fetchClients()
   }
 
   if (loading) {
@@ -126,7 +116,7 @@ export default function TrainerDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {clients.filter(c => c.client.active).length}
+                {clients.filter(c => c?.active).length}
               </div>
             </CardContent>
           </Card>
@@ -138,7 +128,7 @@ export default function TrainerDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {clients.filter(c => !c.client.active).length}
+                {clients.filter(c => !c?.active).length}
               </div>
             </CardContent>
           </Card>
@@ -151,65 +141,52 @@ export default function TrainerDashboard() {
               <div>
                 <CardTitle>Gestión de Clientes</CardTitle>
                 <CardDescription>
-                  Administra tus clientes y sus rutinas
+                  Administra el acceso de tus clientes y sus rutinas
                 </CardDescription>
               </div>
-              <Dialog open={addClientOpen} onOpenChange={setAddClientOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Cliente
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Agregar Nuevo Cliente</DialogTitle>
-                    <DialogDescription>
-                      Crea una cuenta para tu nuevo cliente
-                    </DialogDescription>
-                  </DialogHeader>
-                  <AddClientForm onClientAdded={handleClientAdded} />
-                </DialogContent>
-              </Dialog>
             </div>
           </CardHeader>
           <CardContent>
             {clients.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-sm text-gray-400">Agrega tu primer cliente para comenzar</p>
+                <p className="text-gray-500">No hay clientes registrados aún</p>
+                <p className="text-sm text-gray-400">Los clientes aparecerán aquí cuando se registren</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {clients.map((clientRelation) => (
-                  <div key={clientRelation.id} className="flex items-center justify-between p-4 border rounded-lg">
+                {clients.map((client) => (
+                  <div key={client.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         <span className="text-blue-600 font-medium">
-                          {clientRelation.client.full_name?.[0]?.toUpperCase() || 'C'}
+                          {client?.full_name?.[0]?.toUpperCase() || 'C'}
                         </span>
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-900">
-                          {clientRelation.client.full_name}
+                          {client?.full_name || 'Sin nombre'}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {clientRelation.client.email}
+                          {client?.email || 'Sin email'}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Registrado: {client?.created_at ? new Date(client.created_at).toLocaleDateString() : 'Fecha desconocida'}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
-                      <Badge variant={clientRelation.client.active ? "default" : "secondary"}>
-                        {clientRelation.client.active ? 'Activo' : 'Inactivo'}
+                      <Badge variant={client?.active ? "default" : "secondary"}>
+                        {client?.active ? 'Activo' : 'Inactivo'}
                       </Badge>
 
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">Acceso:</span>
                         <Switch
-                          checked={clientRelation.client.active}
+                          checked={client?.active || false}
                           onCheckedChange={() => 
-                            toggleClientStatus(clientRelation.client.id, clientRelation.client.active)
+                            toggleClientStatus(client.id, client?.active || false)
                           }
                         />
                       </div>
@@ -218,7 +195,7 @@ export default function TrainerDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/trainer/client/${clientRelation.client.id}/routines`)}
+                          onClick={() => router.push(`/trainer/client/${client.id}/routines`)}
                         >
                           <Calendar className="w-4 h-4 mr-1" />
                           Rutinas
@@ -226,7 +203,7 @@ export default function TrainerDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/trainer/client/${clientRelation.client.id}/meals`)}
+                          onClick={() => router.push(`/trainer/client/${client.id}/meals`)}
                         >
                           <Utensils className="w-4 h-4 mr-1" />
                           Alimentación

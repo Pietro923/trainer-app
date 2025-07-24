@@ -6,9 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function LoginForm() {
@@ -16,7 +14,6 @@ export default function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
-  const [role, setRole] = useState<'trainer' | 'client'>('client')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -39,7 +36,8 @@ export default function LoginForm() {
     setLoading(true)
     setError('')
 
-    const { error } = await signUp(email, password, fullName, role)
+    // Todos los nuevos registros son clientes por defecto
+    const { error } = await signUp(email, password, fullName, 'client')
     
     if (error) {
       setError(error.message)
@@ -126,19 +124,6 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="role">Tipo de Usuario</Label>
-            <Select value={role} onValueChange={(value: 'trainer' | 'client') => setRole(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona tu rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="client">Cliente</SelectItem>
-                <SelectItem value="trainer">Entrenador</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {error && (

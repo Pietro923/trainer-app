@@ -58,47 +58,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // Intentar obtener el perfil de la base de datos
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle() // Usar maybeSingle en lugar de single
+        .maybeSingle()
 
-      if (error) {
-        console.error('Error fetching profile:', error)
-        // Si no existe el perfil, crear uno básico
-        if (error.code === 'PGRST116') {
-          console.log('Creating missing profile...')
-          const { data: user } = await supabase.auth.getUser()
-          if (user.user) {
-            const { error: createError } = await supabase
-              .from('profiles')
-              .insert([
-                {
-                  id: userId,
-                  email: user.user.email,
-                  full_name: user.user.user_metadata?.full_name || '',
-                  role: user.user.user_metadata?.role || 'client',
-                  active: true,
-                },
-              ])
-            
-            if (!createError) {
-              // Reintentar obtener el perfil
-              const { data: newProfile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single()
-              setProfile(newProfile)
-            }
+      if (data) {
+        setProfile(data)
+      } else {
+        console.log('Profile not found, creating one...')
+        // Si no existe perfil, crear uno básico
+        const { data: user } = await supabase.auth.getUser()
+        
+        if (user.user) {
+          const newProfile: Profile = {
+              id: userId,
+              email: user.user.email || null,
+              full_name: user.user.user_metadata?.full_name || null,
+              role: 'client',
+              active: true,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              client: undefined
+          }
+
+          // Intentar insertar el perfil
+          const { data: insertedProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert([newProfile])
+            .select()
+            .single()
+
+          if (insertedProfile) {
+            setProfile(insertedProfile)
+          } else {
+            console.error('Error creating profile:', insertError)
+            // Como fallback, usar el perfil temporal
+            setProfile(newProfile)
           }
         }
-      } else {
-        setProfile(data)
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error in fetchProfile:', error)
+      // En caso de cualquier error, crear perfil básico temporal
+      const { data: user } = await supabase.auth.getUser()
+      if (user.user) {
+        const fallbackProfile: Profile = {
+            id: userId,
+            email: user.user.email || null,
+            full_name: 'Usuario',
+            role: 'client',
+            active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            client: undefined
+        }
+        setProfile(fallbackProfile)
+      }
     } finally {
       setLoading(false)
     }
