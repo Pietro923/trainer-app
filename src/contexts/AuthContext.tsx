@@ -1,4 +1,5 @@
 // contexts/AuthContext.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'

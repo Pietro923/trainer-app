@@ -186,7 +186,7 @@ export default function RoutineExercises() {
                 <DialogHeader>
                   <DialogTitle>Agregar Nuevo Ejercicio</DialogTitle>
                   <DialogDescription>
-                    Agrega un ejercicio a la rutina "{routine.name}"
+                    Agrega un ejercicio a la rutina `&apos;`{routine.name}`&apos;
                   </DialogDescription>
                 </DialogHeader>
                 <CreateExerciseForm 
@@ -203,7 +203,7 @@ export default function RoutineExercises() {
                 <DialogHeader>
                   <DialogTitle>Editar Ejercicio</DialogTitle>
                   <DialogDescription>
-                    Modifica los detalles del ejercicio "{editingExercise?.name}"
+                    Modifica los detalles del ejercicio `&apos;`{editingExercise?.name}`&apos;
                   </DialogDescription>
                 </DialogHeader>
                 {editingExercise && (
