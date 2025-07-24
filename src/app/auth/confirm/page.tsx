@@ -1,15 +1,14 @@
 // app/auth/confirm/page.tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
-export default function ConfirmEmail() {
+function ConfirmEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -43,7 +42,7 @@ export default function ConfirmEmail() {
           setStatus('error')
           setMessage('Token de confirmación no válido')
         }
-      } catch (error) {
+      } catch (err) {
         setStatus('error')
         setMessage('Error al confirmar el email')
       }
@@ -94,5 +93,17 @@ export default function ConfirmEmail() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ConfirmEmail() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <ConfirmEmailContent />
+    </Suspense>
   )
 }
