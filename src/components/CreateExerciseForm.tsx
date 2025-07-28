@@ -1,9 +1,7 @@
 // components/CreateExerciseForm.tsx
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,7 +16,6 @@ type CreateExerciseFormProps = {
 }
 
 export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCreated }: CreateExerciseFormProps) {
-  useAuth()
   const [name, setName] = useState('')
   const [sets, setSets] = useState('')
   const [reps, setReps] = useState('')
@@ -30,36 +27,94 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const validateUrl = (url: string): boolean => {
+    if (!url.trim()) return true // URLs vacías son válidas
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+    
+    if (loading) return // Prevenir múltiples submits
+    
     setLoading(true)
     setError('')
 
+    console.log('Submitting exercise with data:', {
+      routineId,
+      name,
+      sets,
+      reps,
+      weight,
+      restTime,
+      notes,
+      videoUrl,
+      imageUrl,
+      nextOrder
+    })
+
+    // Validaciones
+    if (!name.trim()) {
+      setError('El nombre del ejercicio es obligatorio')
+      setLoading(false)
+      return
+    }
+
+    if (videoUrl && !validateUrl(videoUrl)) {
+      setError('La URL del video no es válida')
+      setLoading(false)
+      return
+    }
+
+    if (imageUrl && !validateUrl(imageUrl)) {
+      setError('La URL de la imagen no es válida')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { error: insertError } = await supabase
+      const exerciseData = {
+        routine_id: routineId,
+        name: name.trim(),
+        sets: sets ? parseInt(sets) : null,
+        reps: reps.trim() || null,
+        weight: weight.trim() || null,
+        rest_time: restTime.trim() || null,
+        notes: notes.trim() || null,
+        video_url: videoUrl.trim() || null,
+        image_url: imageUrl.trim() || null,
+        exercise_order: nextOrder,
+      }
+
+      console.log('Inserting exercise data:', exerciseData)
+
+      const { data, error: insertError } = await supabase
         .from('exercises')
-        .insert([
-          {
-            routine_id: routineId,
-            name: name,
-            sets: sets ? parseInt(sets) : null,
-            reps: reps || null,
-            weight: weight || null,
-            rest_time: restTime || null,
-            notes: notes || null,
-            video_url: videoUrl || null,
-            image_url: imageUrl || null,
-            exercise_order: nextOrder,
-          },
-        ])
+        .insert([exerciseData])
+        .select()
+
+      console.log('Insert result:', { data, error: insertError })
 
       if (insertError) {
-        setError(insertError.message)
-        setLoading(false)
+        console.error('Database error:', insertError)
+        setError(`Error al crear ejercicio: ${insertError.message}`)
         return
       }
 
-      // Limpiar formulario y notificar éxito
+      if (!data || data.length === 0) {
+        setError('No se pudo crear el ejercicio')
+        return
+      }
+
+      console.log('Exercise created successfully:', data[0])
+
+      // Limpiar formulario
       setName('')
       setSets('')
       setReps('')
@@ -68,10 +123,15 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
       setNotes('')
       setVideoUrl('')
       setImageUrl('')
-      onExerciseCreated()
+      
+      // Pequeño delay antes de notificar para evitar race conditions
+      setTimeout(() => {
+        onExerciseCreated()
+      }, 100)
       
     } catch (error: any) {
-      setError(error.message)
+      console.error('Unexpected error:', error)
+      setError(`Error inesperado: ${error.message}`)
     } finally {
       setLoading(false)
     }
@@ -89,6 +149,7 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: Press de banca con barra"
             required
+            disabled={loading}
           />
         </div>
 
@@ -101,6 +162,7 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             onChange={(e) => setSets(e.target.value)}
             placeholder="Ej: 4"
             min="1"
+            disabled={loading}
           />
         </div>
 
@@ -112,6 +174,7 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             value={reps}
             onChange={(e) => setReps(e.target.value)}
             placeholder="Ej: 8-10, 12, al fallo"
+            disabled={loading}
           />
         </div>
 
@@ -123,6 +186,7 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             placeholder="Ej: 80kg, Peso corporal"
+            disabled={loading}
           />
         </div>
 
@@ -134,6 +198,7 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             value={restTime}
             onChange={(e) => setRestTime(e.target.value)}
             placeholder="Ej: 2-3 min, 60 seg"
+            disabled={loading}
           />
         </div>
       </div>
@@ -146,6 +211,7 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Instrucciones específicas, técnica, variaciones, etc."
           rows={3}
+          disabled={loading}
         />
       </div>
 
@@ -158,7 +224,11 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
             placeholder="https://youtube.com/watch?v=..."
+            disabled={loading}
           />
+          {videoUrl && !validateUrl(videoUrl) && (
+            <p className="text-red-500 text-xs mt-1">URL no válida</p>
+          )}
         </div>
 
         <div>
@@ -169,7 +239,11 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="https://ejemplo.com/imagen.jpg"
+            disabled={loading}
           />
+          {imageUrl && !validateUrl(imageUrl) && (
+            <p className="text-red-500 text-xs mt-1">URL no válida</p>
+          )}
         </div>
       </div>
 
@@ -180,7 +254,14 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
       )}
 
       <div className="flex justify-end space-x-2">
-        <Button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={
+            !!loading ||
+            (!!videoUrl && !validateUrl(videoUrl)) ||
+            (!!imageUrl && !validateUrl(imageUrl))
+          }
+        >
           {loading ? 'Agregando...' : 'Agregar Ejercicio'}
         </Button>
       </div>

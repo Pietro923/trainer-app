@@ -1,7 +1,7 @@
 // app/trainer/routine/[routineId]/exercises/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase, Routine, Exercise, Profile } from '@/lib/supabase'
@@ -66,6 +66,7 @@ export default function RoutineExercises() {
   }
 
   const handleExerciseCreated = () => {
+    console.log('Exercise created, closing modal and refreshing data...')
     setCreateExerciseOpen(false)
     fetchRoutineData()
   }
@@ -186,7 +187,7 @@ export default function RoutineExercises() {
                 <DialogHeader>
                   <DialogTitle>Agregar Nuevo Ejercicio</DialogTitle>
                   <DialogDescription>
-                    Agrega un ejercicio a la rutina `&apos;`{routine.name}`&apos;
+                    Agrega un ejercicio a la rutina "{routine.name}"
                   </DialogDescription>
                 </DialogHeader>
                 <CreateExerciseForm 
@@ -203,7 +204,7 @@ export default function RoutineExercises() {
                 <DialogHeader>
                   <DialogTitle>Editar Ejercicio</DialogTitle>
                   <DialogDescription>
-                    Modifica los detalles del ejercicio `&apos;`{editingExercise?.name}`&apos;
+                    Modifica los detalles del ejercicio "{editingExercise?.name}"
                   </DialogDescription>
                 </DialogHeader>
                 {editingExercise && (
