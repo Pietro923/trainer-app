@@ -18,7 +18,7 @@ type CreateExerciseFormProps = {
 }
 
 export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCreated }: CreateExerciseFormProps) {
-  const { user } = useAuth()
+  useAuth()
   const [name, setName] = useState('')
   const [sets, setSets] = useState('')
   const [reps, setReps] = useState('')

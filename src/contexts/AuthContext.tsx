@@ -31,35 +31,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Obtener sesión inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setLoading(false)
+    let mounted = true
+
+    // Función para obtener la sesión inicial
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          if (mounted) {
+            setLoading(false)
+          }
+          return
+        }
+
+        if (session?.user && mounted) {
+          setUser(session.user)
+          await fetchProfile(session.user.id)
+        } else if (mounted) {
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error)
+        if (mounted) {
+          setLoading(false)
+        }
       }
-    })
+    }
+
+    // Obtener sesión inicial
+    getInitialSession()
 
     // Escuchar cambios en la autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
+        console.log('Auth state changed:', event, session?.user?.id)
+        
+        if (!mounted) return
+
         if (session?.user) {
+          setUser(session.user)
           await fetchProfile(session.user.id)
         } else {
+          setUser(null)
           setProfile(null)
           setLoading(false)
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Intentar obtener el perfil de la base de datos
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -68,53 +99,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (data) {
         setProfile(data)
-      } else {
-        console.log('Profile not found, creating one...')
-        // Si no existe perfil, crear uno básico
+      } else if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error)
+        // Crear perfil básico si no existe
         const { data: user } = await supabase.auth.getUser()
-        
         if (user.user) {
-          const newProfile: Profile = {
-              id: userId,
-              email: user.user.email || null,
-              full_name: user.user.user_metadata?.full_name || null,
-              role: 'client',
-              active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              client: undefined
+          const fallbackProfile: Profile = {
+            id: userId,
+            email: user.user.email || null,
+            full_name: user.user.user_metadata?.full_name || null,
+            role: 'client',
+            active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
-
-          // Intentar insertar el perfil
-          const { data: insertedProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert([newProfile])
-            .select()
-            .single()
-
-          if (insertedProfile) {
-            setProfile(insertedProfile)
-          } else {
-            console.error('Error creating profile:', insertError)
-            // Como fallback, usar el perfil temporal
-            setProfile(newProfile)
-          }
+          setProfile(fallbackProfile)
         }
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error)
-      // En caso de cualquier error, crear perfil básico temporal
+      // Fallback profile en caso de error
       const { data: user } = await supabase.auth.getUser()
       if (user.user) {
         const fallbackProfile: Profile = {
-            id: userId,
-            email: user.user.email || null,
-            full_name: 'Usuario',
-            role: 'client',
-            active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            client: undefined
+          id: userId,
+          email: user.user.email || null,
+          full_name: 'Usuario',
+          role: 'client',
+          active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
         setProfile(fallbackProfile)
       }
@@ -124,14 +138,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true)
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+    
+    if (error) {
+      setLoading(false)
+    }
+    // El estado se actualizará automáticamente via onAuthStateChange
+    
     return { data, error }
   }
 
   const signUp = async (email: string, password: string, fullName: string, role: 'trainer' | 'client') => {
+    setLoading(true)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -143,14 +165,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     })
 
+    if (error) {
+      setLoading(false)
+    }
+    // El estado se actualizará automáticamente via onAuthStateChange
+
     return { data, error }
   }
 
   const signOut = async () => {
+    setLoading(true)
     const { error } = await supabase.auth.signOut()
+    
     if (error) {
       console.error('Error signing out:', error)
+      setLoading(false)
     }
+    // El estado se actualizará automáticamente via onAuthStateChange
   }
 
   const value = {
