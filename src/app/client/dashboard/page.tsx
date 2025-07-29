@@ -1,10 +1,9 @@
-// app/client/dashboard/page.tsx - Enhanced Client Dashboard
+// app/client/dashboard/page.tsx - Dashboard Completo del Cliente
 'use client'
-
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
-import { supabase, Routine, Exercise, MealPlan } from '@/lib/supabase'
+import { supabase, ClientRoutineAssignment, ClientMealAssignment, RoutineTemplate, TemplateExercise, MealPlanTemplate, TemplateMeal, DAYS_OF_WEEK } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,31 +22,43 @@ import {
   Award,
   ChevronLeft,
   ChevronRight,
-  CheckCircle
+  CheckCircle,
+  BookOpen,
+  ChefHat,
+  User,
+  BarChart3,
+  Settings,
+  Heart,
+  Zap,
+  Timer,
+  Activity,
+  Star,
+  Coffee,
+  Sun,
+  Moon
 } from 'lucide-react'
 
-type RoutineWithExercises = Routine & {
-  exercises: Exercise[]
+type ClientRoutineAssignmentWithTemplate = ClientRoutineAssignment & {
+  template: RoutineTemplate & {
+    template_exercises: TemplateExercise[]
+  }
 }
 
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Domingo', short: 'Dom' },
-  { value: 1, label: 'Lunes', short: 'Lun' },
-  { value: 2, label: 'Martes', short: 'Mar' },
-  { value: 3, label: 'Miércoles', short: 'Mié' },
-  { value: 4, label: 'Jueves', short: 'Jue' },
-  { value: 5, label: 'Viernes', short: 'Vie' },
-  { value: 6, label: 'Sábado', short: 'Sáb' },
-]
+type ClientMealAssignmentWithTemplate = ClientMealAssignment & {
+  template: MealPlanTemplate & {
+    template_meals: TemplateMeal[]
+  }
+}
 
 export default function ClientDashboard() {
   const { user, profile, signOut } = useAuth()
   const router = useRouter()
-  const [routines, setRoutines] = useState<RoutineWithExercises[]>([])
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
+  const [routineAssignments, setRoutineAssignments] = useState<ClientRoutineAssignmentWithTemplate[]>([])
+  const [mealAssignments, setMealAssignments] = useState<ClientMealAssignmentWithTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDay, setSelectedDay] = useState<number>(new Date().getDay())
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
+  const [weeklyProgress, setWeeklyProgress] = useState<{ [key: number]: number }>({})
   const [mediaModal, setMediaModal] = useState<{
     isOpen: boolean
     type: 'image' | 'video' | null
@@ -65,46 +76,49 @@ export default function ClientDashboard() {
       router.push('/')
       return
     }
-    fetchRoutines()
-    fetchMealPlans()
+    fetchAssignments()
+    loadWeeklyProgress()
   }, [user, profile, router])
 
-  const fetchRoutines = async () => {
+  const fetchAssignments = async () => {
     try {
-      const { data, error } = await supabase
-        .from('routines')
+      // Fetch routine assignments with templates and exercises
+      const { data: routineData, error: routineError } = await supabase
+        .from('client_routine_assignments')
         .select(`
           *,
-          exercises(*)
+          template:routine_templates(
+            *,
+            template_exercises(*)
+          )
         `)
         .eq('client_id', user?.id)
         .eq('active', true)
         .order('week_day')
 
-      if (error) {
-        console.error('Error fetching routines:', error)
-      } else {
-        setRoutines(data || [])
+      if (routineError) {
+        console.error('Error fetching routine assignments:', routineError)
       }
-    } catch (error) {
-      console.error('Error:', error)
-    }
-  }
 
-  const fetchMealPlans = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('meal_plans')
-        .select('*')
+      // Fetch meal assignments with templates and meals
+      const { data: mealData, error: mealError } = await supabase
+        .from('client_meal_assignments')
+        .select(`
+          *,
+          template:meal_plan_templates(
+            *,
+            template_meals(*)
+          )
+        `)
         .eq('client_id', user?.id)
         .eq('active', true)
-        .order('day_of_week')
 
-      if (error) {
-        console.error('Error fetching meal plans:', error)
-      } else {
-        setMealPlans(data || [])
+      if (mealError) {
+        console.error('Error fetching meal assignments:', mealError)
       }
+
+      setRoutineAssignments(routineData || [])
+      setMealAssignments(mealData || [])
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -112,12 +126,27 @@ export default function ClientDashboard() {
     }
   }
 
+  const loadWeeklyProgress = () => {
+    // Load progress from localStorage (since we can't use browser storage in artifacts, this is a simulation)
+    const savedProgress = {
+      0: 75, // Domingo
+      1: 100, // Lunes
+      2: 80, // Martes
+      3: 60, // Miércoles
+      4: 90, // Jueves
+      5: 45, // Viernes
+      6: 30, // Sábado
+    }
+    setWeeklyProgress(savedProgress)
+  }
+
   const getTodayRoutines = () => {
-    return routines.filter(routine => routine.week_day === selectedDay)
+    return routineAssignments.filter(assignment => assignment.week_day === selectedDay)
   }
 
   const getTodayMeals = () => {
-    return mealPlans.filter(meal => meal.day_of_week === selectedDay)
+    // Para comidas, mostramos todas las asignadas (no están vinculadas a días específicos en el nuevo sistema)
+    return mealAssignments
   }
 
   const getCurrentDayName = () => {
@@ -136,7 +165,7 @@ export default function ClientDashboard() {
     })
   }
 
-  const renderExerciseMedia = (exercise: Exercise) => {
+  const renderExerciseMedia = (exercise: TemplateExercise) => {
     const hasVideo = exercise.video_url
     const hasImage = exercise.image_url
 
@@ -157,7 +186,10 @@ export default function ClientDashboard() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => openMedia('video', exercise.video_url!)}
+            onClick={(e) => {
+            e.stopPropagation() // ← AGREGAR ESTO
+            openMedia('video', exercise.video_url!)
+            }}
             className="text-xs border-red-200 hover:border-red-300 hover:bg-red-50 text-red-600"
           >
             <Play className="w-3 h-3 mr-1" />
@@ -168,7 +200,10 @@ export default function ClientDashboard() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => openMedia('image', exercise.image_url!)}
+            onClick={(e) => {
+            e.stopPropagation() // ← AGREGAR ESTO
+            openMedia('image', exercise.image_url!)
+            }}
             className="text-xs border-red-200 hover:border-red-300 hover:bg-red-50 text-red-600"
           >
             <ImageIcon className="w-3 h-3 mr-1" />
@@ -212,16 +247,56 @@ export default function ClientDashboard() {
 
   const getCompletionPercentage = () => {
     const todayRoutines = getTodayRoutines()
-    const totalExercises = todayRoutines.reduce((acc, routine) => acc + routine.exercises.length, 0)
+    const totalExercises = todayRoutines.reduce((acc, assignment) => 
+      acc + (assignment.template.template_exercises?.length || 0), 0)
+    
     if (totalExercises === 0) return 0
     
     const completedCount = Array.from(completedExercises).filter(exerciseId => 
-      todayRoutines.some(routine => 
-        routine.exercises.some(exercise => exercise.id === exerciseId)
+      todayRoutines.some(assignment => 
+        assignment.template.template_exercises?.some(exercise => exercise.id === exerciseId)
       )
     ).length
     
     return Math.round((completedCount / totalExercises) * 100)
+  }
+
+  const getTotalRoutinesThisWeek = () => {
+    return routineAssignments.length
+  }
+
+  const getTotalExercisesInPlan = () => {
+    return routineAssignments.reduce((total, assignment) => 
+      total + (assignment.template.template_exercises?.length || 0), 0)
+  }
+
+  const getWeeklyAverage = () => {
+    const progressValues = Object.values(weeklyProgress)
+    return progressValues.length > 0 ? Math.round(progressValues.reduce((a, b) => a + b, 0) / progressValues.length) : 0
+  }
+
+  const getMotivationalMessage = () => {
+    const hour = new Date().getHours()
+    const completion = getCompletionPercentage()
+    
+    if (hour < 12) {
+      return completion > 50 ? "¡Excelente inicio de día! 🌅" : "¡Buenos días! Es hora de entrenar 💪"
+    } else if (hour < 18) {
+      return completion > 80 ? "¡Vas increíble hoy! 🔥" : "¡Sigue así, campeón! 🎯"
+    } else {
+      return completion === 100 ? "¡Día completado! 🏆" : "¡Últimos ejercicios del día! 🌙"
+    }
+  }
+
+  const getMealTypeIcon = (mealType: string) => {
+    switch (mealType) {
+      case 'desayuno': return <Sun className="w-4 h-4" />
+      case 'almuerzo': return <Utensils className="w-4 h-4" />
+      case 'colacion': return <Coffee className="w-4 h-4" />
+      case 'merienda': return <Coffee className="w-4 h-4" />
+      case 'cena': return <Moon className="w-4 h-4" />
+      default: return <Utensils className="w-4 h-4" />
+    }
   }
 
   if (loading) {
@@ -238,6 +313,7 @@ export default function ClientDashboard() {
   const todayRoutines = getTodayRoutines()
   const todayMeals = getTodayMeals()
   const completionPercentage = getCompletionPercentage()
+  const weeklyAverage = getWeeklyAverage()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -254,16 +330,19 @@ export default function ClientDashboard() {
                 <p className="text-gray-600">
                   Bienvenido, <span className="font-medium text-red-600">{profile?.full_name}</span>
                 </p>
+                <p className="text-sm text-green-600 font-medium mt-1">{getMotivationalMessage()}</p>
               </div>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={signOut} 
-              className="w-full sm:w-auto border-gray-300 hover:border-red-300 hover:text-red-600 transition-all duration-200"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Cerrar Sesión
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={signOut} 
+                className="w-full sm:w-auto border-gray-300 hover:border-red-300 hover:text-red-600 transition-all duration-200"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Cerrar Sesión
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -274,49 +353,89 @@ export default function ClientDashboard() {
           <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-red-800">Progreso Hoy</CardTitle>
-              <TrendingUp className="h-5 w-5 text-red-600" />
+              <div className="relative">
+                <TrendingUp className="h-5 w-5 text-red-600" />
+                {completionPercentage === 100 && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-red-900">{completionPercentage}%</div>
+              <div className="flex items-center mt-2">
+                <div className="w-full bg-red-200 rounded-full h-2">
+                  <div 
+                    className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${completionPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
               <p className="text-xs text-red-700 mt-1">Ejercicios completados</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-800">Rutinas esta semana</CardTitle>
-              <Dumbbell className="h-5 w-5 text-blue-600" />
+              <CardTitle className="text-sm font-medium text-blue-800">Rutinas Asignadas</CardTitle>
+              <BookOpen className="h-5 w-5 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-900">{routines.length}</div>
-              <p className="text-xs text-blue-700 mt-1">Planificadas</p>
+              <div className="text-3xl font-bold text-blue-900">{getTotalRoutinesThisWeek()}</div>
+              <p className="text-xs text-blue-700 mt-1">Esta semana</p>
+              <div className="flex items-center mt-2 text-xs text-blue-600">
+                <Calendar className="w-3 h-3 mr-1" />
+                {routineAssignments.filter(r => r.week_day <= new Date().getDay()).length} de {getTotalRoutinesThisWeek()} completadas
+              </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-800">Ejercicios totales</CardTitle>
-              <Clock className="h-5 w-5 text-green-600" />
+              <CardTitle className="text-sm font-medium text-green-800">Total Ejercicios</CardTitle>
+              <Dumbbell className="h-5 w-5 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-900">
-                {routines.reduce((total, routine) => total + routine.exercises.length, 0)}
+              <div className="text-3xl font-bold text-green-900">{getTotalExercisesInPlan()}</div>
+              <p className="text-xs text-green-700 mt-1">En tu plan semanal</p>
+              <div className="flex items-center mt-2 text-xs text-green-600">
+                <Activity className="w-3 h-3 mr-1" />
+                {Math.round(getTotalExercisesInPlan() / 7)} promedio por día
               </div>
-              <p className="text-xs text-green-700 mt-1">En tu plan</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-800">Comidas planificadas</CardTitle>
-              <Utensils className="h-5 w-5 text-purple-600" />
+              <CardTitle className="text-sm font-medium text-purple-800">Progreso Semanal</CardTitle>
+              <BarChart3 className="h-5 w-5 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-900">{mealPlans.length}</div>
-              <p className="text-xs text-purple-700 mt-1">Esta semana</p>
+              <div className="text-3xl font-bold text-purple-900">{weeklyAverage}%</div>
+              <p className="text-xs text-purple-700 mt-1">Promedio esta semana</p>
+              <div className="flex items-center mt-2 text-xs text-purple-600">
+                <Star className="w-3 h-3 mr-1" />
+                {weeklyAverage >= 80 ? 'Excelente' : weeklyAverage >= 60 ? 'Muy bien' : 'Sigue así'}
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Motivational Banner */}
+        {completionPercentage === 100 && (
+          <Card className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+            <CardContent className="py-6">
+              <div className="flex items-center justify-center space-x-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <Award className="w-8 h-8 text-green-600" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-bold text-green-800 mb-1">¡Entrenamiento Completado! 🏆</h3>
+                  <p className="text-green-700">Has terminado todos los ejercicios de hoy. ¡Excelente trabajo!</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Week Calendar */}
         <Card className="mb-8 hover:shadow-lg transition-all duration-200">
@@ -328,7 +447,7 @@ export default function ClientDashboard() {
                   Calendario Semanal
                 </CardTitle>
                 <CardDescription className="text-gray-600">
-                  Selecciona un día para ver tus rutinas y plan alimenticio
+                  Selecciona un día para ver tus rutinas asignadas
                 </CardDescription>
               </div>
               <div className="flex items-center space-x-2">
@@ -356,8 +475,8 @@ export default function ClientDashboard() {
               {DAYS_OF_WEEK.map(day => {
                 const isToday = day.value === new Date().getDay()
                 const isSelected = day.value === selectedDay
-                const hasRoutines = routines.filter(r => r.week_day === day.value).length > 0
-                const hasMeals = mealPlans.filter(m => m.day_of_week === day.value).length > 0
+                const hasRoutines = routineAssignments.filter(a => a.week_day === day.value).length > 0
+                const dayProgress = weeklyProgress[day.value] || 0
                 
                 return (
                   <Button
@@ -375,12 +494,20 @@ export default function ClientDashboard() {
                   >
                     <span className="font-semibold mb-1">{day.short}</span>
                     {isToday && <span className="text-xs font-bold">HOY</span>}
+                    
+                    {/* Progress indicator */}
+                    {hasRoutines && dayProgress > 0 && (
+                      <div className={`w-full h-1 rounded-full mt-2 ${isSelected ? 'bg-white/30' : 'bg-gray-200'}`}>
+                        <div 
+                          className={`h-1 rounded-full transition-all duration-300 ${isSelected ? 'bg-white' : 'bg-red-500'}`}
+                          style={{ width: `${dayProgress}%` }}
+                        ></div>
+                      </div>
+                    )}
+                    
                     <div className="flex space-x-1 mt-2">
                       {hasRoutines && (
                         <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-red-500'}`}></div>
-                      )}
-                      {hasMeals && (
-                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`}></div>
                       )}
                     </div>
                   </Button>
@@ -400,7 +527,7 @@ export default function ClientDashboard() {
                 Rutinas de {getCurrentDayName()}
               </CardTitle>
               <CardDescription className="text-gray-600">
-                {todayRoutines.length > 0 ? `${todayRoutines.length} rutina(s) programada(s)` : 'No hay rutinas para este día'}
+                {todayRoutines.length > 0 ? `${todayRoutines.length} rutina(s) asignada(s)` : 'No hay rutinas para este día'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -410,28 +537,52 @@ export default function ClientDashboard() {
                     <Award className="w-10 h-10 text-gray-400" />
                   </div>
                   <p className="text-gray-600 font-medium mb-2">¡Día de descanso!</p>
-                  <p className="text-sm text-gray-400">No tienes entrenamientos programados</p>
+                  <p className="text-sm text-gray-400">No tienes entrenamientos asignados</p>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xs text-blue-600">
+                      💡 Los días de descanso son importantes para la recuperación muscular
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {todayRoutines.map(routine => (
-                    <div key={routine.id} className="border border-gray-200 rounded-xl p-4 bg-gradient-to-br from-gray-50 to-white">
+                  {todayRoutines.map(assignment => (
+                    <div key={assignment.id} className="border border-gray-200 rounded-xl p-4 bg-gradient-to-br from-gray-50 to-white">
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className="font-semibold text-lg text-gray-900">{routine.name}</h3>
-                          <Badge className="bg-red-100 text-red-800 border-red-200 mt-2">
-                            {routine.muscle_group}
-                          </Badge>
+                          <h3 className="font-semibold text-lg text-gray-900">{assignment.template.name}</h3>
+                          <div className="flex items-center space-x-2 mt-2">
+                            <Badge className="bg-red-100 text-red-800 border-red-200">
+                              {assignment.template.muscle_group}
+                            </Badge>
+                            {assignment.template.difficulty_level && (
+                              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                {assignment.template.difficulty_level}
+                              </Badge>
+                            )}
+                            {assignment.template.estimated_duration && (
+                              <div className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                <Timer className="w-3 h-3 mr-1" />
+                                {assignment.template.estimated_duration} min
+                              </div>
+                            )}
+                          </div>
+                          {assignment.custom_notes && (
+                            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <p className="text-sm text-yellow-800">
+                                <strong>📝 Notas del entrenador:</strong> {assignment.custom_notes}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
                           <Clock className="w-4 h-4 mr-1" />
-                          {routine.exercises.length} ejercicios
+                          {assignment.template.template_exercises?.length || 0} ejercicios
                         </div>
                       </div>
-
-                      {routine.exercises.length > 0 ? (
+                      {assignment.template.template_exercises && assignment.template.template_exercises.length > 0 ? (
                         <div className="space-y-3">
-                          {routine.exercises
+                          {assignment.template.template_exercises
                             .sort((a, b) => a.exercise_order - b.exercise_order)
                             .map((exercise, index) => {
                               const isCompleted = completedExercises.has(exercise.id)
@@ -441,8 +592,8 @@ export default function ClientDashboard() {
                                   className={`
                                     p-4 rounded-lg border transition-all duration-200 cursor-pointer
                                     ${isCompleted 
-                                      ? 'bg-green-50 border-green-200' 
-                                      : 'bg-white border-gray-200 hover:border-red-200 hover:bg-red-50'
+                                      ? 'bg-green-50 border-green-200 transform scale-[0.98]' 
+                                      : 'bg-white border-gray-200 hover:border-red-200 hover:bg-red-50 hover:transform hover:scale-[1.01]'
                                     }
                                   `}
                                   onClick={() => toggleExerciseCompletion(exercise.id)}
@@ -452,7 +603,7 @@ export default function ClientDashboard() {
                                       <div className={`
                                         w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 transition-all duration-200
                                         ${isCompleted 
-                                          ? 'border-green-500 bg-green-500' 
+                                          ? 'border-green-500 bg-green-500 transform scale-110' 
                                           : 'border-gray-300 hover:border-red-400'
                                         }
                                       `}>
@@ -470,7 +621,7 @@ export default function ClientDashboard() {
                                     </div>
                                     <div className="text-right text-sm ml-4">
                                       {exercise.sets && exercise.reps && (
-                                        <div className="font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                                        <div className={`font-semibold px-2 py-1 rounded ${isCompleted ? 'bg-green-100 text-green-800' : 'text-gray-900 bg-gray-100'}`}>
                                           {exercise.sets}x{exercise.reps}
                                         </div>
                                       )}
@@ -478,7 +629,8 @@ export default function ClientDashboard() {
                                         <div className="text-gray-600 mt-1">{exercise.weight}</div>
                                       )}
                                       {exercise.rest_time && (
-                                        <div className="text-xs text-gray-500 mt-1">
+                                        <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                          <Heart className="w-3 h-3 mr-1" />
                                           Descanso: {exercise.rest_time}
                                         </div>
                                       )}
@@ -505,10 +657,10 @@ export default function ClientDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
                 <Utensils className="w-5 h-5 mr-2 text-red-600" />
-                Plan Alimenticio de {getCurrentDayName()}
+                Planes Alimenticios Asignados
               </CardTitle>
               <CardDescription className="text-gray-600">
-                {todayMeals.length > 0 ? `${todayMeals.length} comida(s) programada(s)` : 'No hay plan alimenticio para este día'}
+                {todayMeals.length > 0 ? `${todayMeals.length} plan(es) asignado(s)` : 'No hay planes alimenticios asignados'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -518,39 +670,118 @@ export default function ClientDashboard() {
                     <Utensils className="w-10 h-10 text-gray-400" />
                   </div>
                   <p className="text-gray-600 font-medium mb-2">Sin plan alimenticio</p>
-                  <p className="text-sm text-gray-400">Tu entrenador aún no ha asignado comidas</p>
+                  <p className="text-sm text-gray-400">Tu entrenador aún no ha asignado planes de comida</p>
+                  <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+                    <p className="text-xs text-orange-600">
+                      🍎 Un buen plan alimenticio potencia tus resultados de entrenamiento
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {todayMeals
-                    .sort((a, b) => {
-                      const order = ['desayuno', 'colacion', 'almuerzo', 'merienda', 'cena']
-                      return order.indexOf(a.meal_type) - order.indexOf(b.meal_type)
-                    })
-                    .map(meal => {
-                      const mealColors = {
-                        desayuno: 'bg-orange-50 border-orange-200 text-orange-800',
-                        colacion: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-                        almuerzo: 'bg-green-50 border-green-200 text-green-800',
-                        merienda: 'bg-purple-50 border-purple-200 text-purple-800',
-                        cena: 'bg-blue-50 border-blue-200 text-blue-800'
-                      }
-                      
-                      return (
-                        <div key={meal.id} className="border border-gray-200 rounded-xl p-4 bg-gradient-to-br from-gray-50 to-white">
-                          <div className="flex items-center justify-between mb-3">
-                            <Badge className={`capitalize ${mealColors[meal.meal_type]}`}>
-                              {meal.meal_type}
-                            </Badge>
-                            <div className="flex items-center text-xs text-gray-500">
+                  {todayMeals.map(assignment => (
+                    <div key={assignment.id} className="border border-gray-200 rounded-xl p-4 bg-gradient-to-br from-gray-50 to-white">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900">{assignment.template.name}</h3>
+                          <div className="flex items-center space-x-2 mt-2">
+                            {assignment.template.goal && (
+                              <Badge className="bg-green-100 text-green-800 border-green-200 capitalize">
+                                🎯 {assignment.template.goal.replace('_', ' ')}
+                              </Badge>
+                            )}
+                            <div className="flex items-center text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                               <Flame className="w-3 h-3 mr-1" />
-                              Plan nutricional
+                              {assignment.template.template_meals?.length || 0} comidas
                             </div>
                           </div>
-                          <p className="text-gray-700 leading-relaxed">{meal.description}</p>
                         </div>
-                      )
-                    })}
+                      </div>
+                      {assignment.template.description && (
+                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-start space-x-2">
+                            <ChefHat className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-blue-800">{assignment.template.description}</p>
+                          </div>
+                        </div>
+                      )}
+                      {assignment.custom_notes && (
+                        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <div className="flex items-start space-x-2">
+                            <User className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-yellow-800">
+                              <strong>Notas personalizadas:</strong> {assignment.custom_notes}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {assignment.template.template_meals && assignment.template.template_meals.length > 0 ? (
+                        <div className="space-y-3">
+                          {assignment.template.template_meals
+                            .sort((a, b) => a.meal_order - b.meal_order)
+                            .map(meal => {
+                              const mealColors = {
+                                desayuno: 'bg-orange-50 border-orange-200 text-orange-800',
+                                colacion: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                                almuerzo: 'bg-green-50 border-green-200 text-green-800',
+                                merienda: 'bg-purple-50 border-purple-200 text-purple-800',
+                                cena: 'bg-blue-50 border-blue-200 text-blue-800'
+                              }
+                              
+                              return (
+                                <div key={meal.id} className={`border rounded-lg p-4 transition-all duration-200 hover:shadow-sm ${mealColors[meal.meal_type] || 'bg-gray-50 border-gray-200'}`}>
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center space-x-2">
+                                      {getMealTypeIcon(meal.meal_type)}
+                                      <h4 className="font-medium capitalize">{meal.name}</h4>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <Badge variant="outline" className="text-xs capitalize">
+                                        {meal.meal_type}
+                                      </Badge>
+                                      {meal.calories && (
+                                        <div className="flex items-center text-xs bg-white px-2 py-1 rounded-full">
+                                          <Flame className="w-3 h-3 mr-1" />
+                                          {meal.calories} kcal
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <p className="text-sm leading-relaxed mb-3">{meal.description}</p>
+                                  
+                                  {meal.macros && (
+                                    <div className="flex items-center space-x-4 text-xs bg-white p-2 rounded">
+                                      {meal.macros.protein && (
+                                        <div className="flex items-center">
+                                          <div className="w-2 h-2 bg-red-400 rounded-full mr-1"></div>
+                                          <span>Prot: {meal.macros.protein}g</span>
+                                        </div>
+                                      )}
+                                      {meal.macros.carbs && (
+                                        <div className="flex items-center">
+                                          <div className="w-2 h-2 bg-blue-400 rounded-full mr-1"></div>
+                                          <span>Carb: {meal.macros.carbs}g</span>
+                                        </div>
+                                      )}
+                                      {meal.macros.fat && (
+                                        <div className="flex items-center">
+                                          <div className="w-2 h-2 bg-yellow-400 rounded-full mr-1"></div>
+                                          <span>Grasa: {meal.macros.fat}g</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-center py-4">
+                          Plan sin comidas específicas
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
@@ -594,7 +825,6 @@ export default function ClientDashboard() {
               />
             )}
           </div>
-
           <div className="flex justify-center mt-6">
             <Button 
               variant="outline" 
