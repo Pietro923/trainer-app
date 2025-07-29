@@ -40,30 +40,41 @@ export default function RoutineExercises() {
   }, [user, profile, router, routineId])
 
   const fetchRoutineData = async () => {
-    try {
-      const { data: routineData, error: routineError } = await supabase
-        .from('routines')
-        .select(`
-          *,
-          client:profiles!routines_client_id_fkey(*),
-          exercises(*)
-        `)
-        .eq('id', routineId)
-        .single()
+  try {
+    console.log('=== FETCHING ROUTINE DATA ===')
+    console.log('Routine ID:', routineId)
+    
+    const { data: routineData, error: routineError } = await supabase
+      .from('routines')
+      .select(`
+        *,
+        client:profiles!routines_client_id_fkey(*),
+        exercises(*)
+      `)
+      .eq('id', routineId)
+      .single()
 
-      if (routineError) {
-        console.error('Error fetching routine:', routineError)
-        router.push('/trainer/dashboard')
-      } else {
-        setRoutine(routineData)
-        setExercises(routineData.exercises.sort((a: { exercise_order: number }, b: { exercise_order: number }) => a.exercise_order - b.exercise_order))
-      }
-    } catch (error) {
-      console.error('Error:', error)
-    } finally {
-      setLoading(false)
+    console.log('Fetch result:', { routineData, routineError })
+
+    if (routineError) {
+      console.error('Error fetching routine:', routineError)
+      router.push('/trainer/dashboard')
+    } else if (routineData) {
+      console.log('Setting routine data:', routineData)
+      setRoutine(routineData)
+      
+      console.log('Setting exercises:', routineData.exercises)
+      setExercises(routineData.exercises.sort((a: any, b: any) => a.exercise_order - b.exercise_order))
+      
+      console.log('Fetch completed successfully')
     }
+  } catch (error) {
+    console.error('Error in fetchRoutineData:', error)
+    // NO redirigir en caso de error, solo mostrar error
+  } finally {
+    setLoading(false)
   }
+}
 
   const handleExerciseCreated = () => {
     console.log('Exercise created, closing modal and refreshing data...')

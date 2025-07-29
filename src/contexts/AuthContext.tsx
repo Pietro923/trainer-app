@@ -1,4 +1,4 @@
-// contexts/AuthContext.tsx - Con mejor debugging
+// contexts/AuthContext.tsx - Versión simplificada y más robusta
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
@@ -50,16 +50,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const mountedRef = useRef(true)
   const initializingRef = useRef(false)
 
-  // Función para actualizar el estado de forma segura
-  const updateState = useCallback((updates: Partial<AuthState>) => {
-    if (mountedRef.current) {
-      setState(prev => ({ ...prev, ...updates }))
-    }
-  }, [])
-
-  // Función para obtener el perfil con manejo de errores mejorado
-  const fetchProfile = useCallback(async (userId: string, retryCount = 0): Promise<Profile | null> => {
+  // Función simple para obtener perfil
+  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
+      console.log('Fetching profile for user:', userId)
+      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -67,40 +62,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single()
 
       if (error) {
-        if (error.code === 'PGRST116' && retryCount === 0) {
-          try {
-            const { data: user } = await supabase.auth.getUser()
-            if (user.user && user.user.id === userId) {
-              const newProfile: Omit<Profile, 'created_at' | 'updated_at'> = {
-                id: userId,
-                email: user.user.email || null,
-                full_name: user.user.user_metadata?.full_name || 'Usuario',
-                role: user.user.user_metadata?.role || 'client',
-                active: true
-              }
-
-              const { data: createdProfile, error: createError } = await supabase
-                .from('profiles')
-                .insert([newProfile])
-                .select()
-                .single()
-
-              if (createError) {
-                console.error('Error creating profile:', createError)
-                return null
-              }
-              
-              return createdProfile
+        console.log('Profile fetch error:', error)
+        
+        // Si el perfil no existe, crear uno básico
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating basic profile')
+          
+          const { data: user } = await supabase.auth.getUser()
+          if (user.user && user.user.id === userId) {
+            const newProfile = {
+              id: userId,
+              email: user.user.email || null,
+              full_name: user.user.user_metadata?.full_name || 'Usuario',
+              role: (user.user.user_metadata?.role || 'client') as 'trainer' | 'client',
+              active: true
             }
-          } catch (createError) {
-            console.error('Error creating profile:', createError)
+
+            const { data: createdProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert([newProfile])
+              .select()
+              .single()
+
+            if (createError) {
+              console.error('Error creating profile:', createError)
+              return null
+            }
+            
+            console.log('Profile created successfully:', createdProfile)
+            return createdProfile
           }
         }
-        
-        console.error('Error fetching profile:', error)
         return null
       }
 
+      console.log('Profile fetched successfully:', profile)
       return profile
     } catch (error) {
       console.error('Error in fetchProfile:', error)
@@ -108,19 +104,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [])
 
-  // Función para inicializar la sesión
+  // Función simple de inicialización
   const initializeAuth = useCallback(async () => {
-    if (initializingRef.current) return
+    if (initializingRef.current || state.initialized) return
+    
+    console.log('Initializing auth...')
     initializingRef.current = true
 
     try {
-      updateState({ loading: true, error: null })
-
       const { data: { session }, error } = await supabase.auth.getSession()
       
       if (error) {
-        console.error('Error getting session:', error)
-        updateState({
+        console.error('Session error:', error)
+        setState({
           user: null,
           profile: null,
           loading: false,
@@ -131,8 +127,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (session?.user) {
+        console.log('User session found:', session.user.id)
         const profile = await fetchProfile(session.user.id)
-        updateState({
+        setState({
           user: session.user,
           profile,
           loading: false,
@@ -140,7 +137,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           error: null
         })
       } else {
-        updateState({
+        console.log('No user session found')
+        setState({
           user: null,
           profile: null,
           loading: false,
@@ -149,8 +147,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         })
       }
     } catch (error) {
-      console.error('Error initializing auth:', error)
-      updateState({
+      console.error('Auth initialization error:', error)
+      setState({
         user: null,
         profile: null,
         loading: false,
@@ -160,16 +158,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       initializingRef.current = false
     }
-  }, [fetchProfile, updateState])
+  }, [fetchProfile])
 
-  // Efectos
+  // Efecto principal (solo se ejecuta una vez)
   useEffect(() => {
+    console.log('AuthProvider mounted')
     mountedRef.current = true
     
+    // Inicializar solo si no se ha hecho antes
     if (!state.initialized && !initializingRef.current) {
       initializeAuth()
     }
 
+    // Listener de cambios de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id)
@@ -177,77 +178,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!mountedRef.current) return
 
         try {
-          if (session?.user) {
+          if (session?.user && event !== 'TOKEN_REFRESHED') {
             const profile = await fetchProfile(session.user.id)
-            updateState({
+            setState(prev => ({
+              ...prev,
               user: session.user,
               profile,
               loading: false,
               error: null
-            })
+            }))
 
             if (event === 'SIGNED_IN' && profile) {
               showSuccess(`¡Bienvenido, ${profile.full_name}!`)
             }
-          } else {
-            updateState({
+          } else if (event === 'SIGNED_OUT') {
+            setState(prev => ({
+              ...prev,
               user: null,
               profile: null,
               loading: false,
               error: null
-            })
-
-            if (event === 'SIGNED_OUT') {
-              showSuccess('Sesión cerrada correctamente')
-            }
+            }))
+            showSuccess('Sesión cerrada correctamente')
           }
         } catch (error) {
           console.error('Error in auth state change:', error)
-          updateState({
-            loading: false,
-            error: error instanceof Error ? error.message : 'Error de autenticación'
-          })
         }
       }
     )
 
     return () => {
+      console.log('AuthProvider unmounting')
       mountedRef.current = false
       subscription.unsubscribe()
     }
-  }, [])
+  }, []) // Array de dependencias vacío - solo se ejecuta una vez
 
-  // Funciones de autenticación CON DEBUGGING MEJORADO
+  // Funciones de autenticación (simplificadas)
   const signIn = useCallback(async (data: SignInData): Promise<{ success: boolean; error?: string }> => {
     console.log('=== SIGNIN DEBUG ===')
     console.log('Data received:', data)
-    console.log('Data type:', typeof data)
-    console.log('Email:', data?.email, 'Password length:', data?.password?.length)
     
     const validation = validateSignIn(data)
     console.log('Validation result:', validation)
     
     if (!validation.success) {
-      console.log('Validation errors:', validation.error?.issues)
       const firstError = validation.error?.issues?.[0]?.message || 'Datos inválidos'
-      console.log('First error message:', firstError)
       showError(firstError)
       return { success: false, error: firstError }
     }
 
     try {
-      updateState({ loading: true, error: null })
-      console.log('Attempting Supabase signIn with:', validation.data)
+      setState(prev => ({ ...prev, loading: true, error: null }))
 
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: validation.data.email,
         password: validation.data.password
       })
 
-      console.log('Supabase response:', { authData, error })
-
       if (error) {
-        console.log('Supabase auth error:', error)
         throw error
       }
 
@@ -255,33 +244,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('No se pudo iniciar sesión')
       }
 
-      console.log('Login successful!')
       return { success: true }
     } catch (error) {
-      console.log('Catch block error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Error al iniciar sesión'
       showError(errorMessage)
-      updateState({ loading: false, error: errorMessage })
+      setState(prev => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
-  }, [showError, updateState])
+  }, [showError])
 
   const signUp = useCallback(async (data: SignUpData): Promise<{ success: boolean; error?: string }> => {
-    console.log('=== SIGNUP DEBUG ===')
-    console.log('Data received:', data)
-    
     const validation = validateSignUp(data)
-    console.log('Validation result:', validation)
     
     if (!validation.success) {
-      console.log('Validation errors:', validation.error?.issues)
       const firstError = validation.error?.issues?.[0]?.message || 'Datos inválidos'
       showError(firstError)
       return { success: false, error: firstError }
     }
 
     try {
-      updateState({ loading: true, error: null })
+      setState(prev => ({ ...prev, loading: true, error: null }))
 
       const { data: authData, error } = await supabase.auth.signUp({
         email: validation.data.email,
@@ -303,43 +285,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       showSuccess('Cuenta creada exitosamente. Revisa tu email para confirmar.')
-      updateState({ loading: false })
+      setState(prev => ({ ...prev, loading: false }))
       return { success: true }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al crear cuenta'
       showError(errorMessage)
-      updateState({ loading: false, error: errorMessage })
+      setState(prev => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
-  }, [showError, showSuccess, updateState])
+  }, [showError, showSuccess])
 
   const signOut = useCallback(async () => {
     try {
-      updateState({ loading: true })
-      
+      setState(prev => ({ ...prev, loading: true }))
       const { error } = await supabase.auth.signOut()
-      
-      if (error) {
-        throw error
-      }
+      if (error) throw error
     } catch (error) {
       console.error('Error signing out:', error)
       showError('Error al cerrar sesión')
-      updateState({ loading: false })
+      setState(prev => ({ ...prev, loading: false }))
     }
-  }, [showError, updateState])
+  }, [showError])
 
   const refreshProfile = useCallback(async () => {
     if (!state.user?.id) return
-
     try {
       const profile = await fetchProfile(state.user.id)
-      updateState({ profile })
+      setState(prev => ({ ...prev, profile }))
     } catch (error) {
       console.error('Error refreshing profile:', error)
       showError('Error al actualizar perfil')
     }
-  }, [state.user?.id, fetchProfile, updateState, showError])
+  }, [state.user?.id, fetchProfile, showError])
 
   const updateProfile = useCallback(async (updates: Partial<Profile>): Promise<{ success: boolean; error?: string }> => {
     if (!state.user?.id || !state.profile) {
@@ -354,11 +331,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .select()
         .single()
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error
 
-      updateState({ profile: data })
+      setState(prev => ({ ...prev, profile: data }))
       showSuccess('Perfil actualizado correctamente')
       return { success: true }
     } catch (error) {
@@ -366,7 +341,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       showError(errorMessage)
       return { success: false, error: errorMessage }
     }
-  }, [state.user?.id, state.profile, updateState, showSuccess, showError])
+  }, [state.user?.id, state.profile, showSuccess, showError])
 
   const resetPassword = useCallback(async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -374,9 +349,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         redirectTo: `${window.location.origin}/auth/reset-password`
       })
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error
 
       showSuccess('Se ha enviado un enlace de recuperación a tu email')
       return { success: true }

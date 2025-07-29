@@ -1,22 +1,36 @@
-// lib/validations.ts
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// lib/validations.ts - URLs opcionales corregidas
 import { z } from 'zod'
 import { useState, useCallback } from 'react'
 
-// Validaciones comunes
-const urlSchema = z.string().url('URL inválida').optional().or(z.literal(''))
+// Validaciones comunes - CORREGIDAS para URLs opcionales
+const urlSchema = z.union([
+  z.string().url('URL inválida'),
+  z.string().length(0), // Permite strings vacíos
+  z.undefined(),
+  z.null()
+]).optional()
+
 const emailSchema = z.string().email('Email inválido')
 const passwordSchema = z.string().min(6, 'La contraseña debe tener al menos 6 caracteres')
 
-// Función para sanitizar entrada de usuario
+// Función para sanitizar entrada de usuario (CORREGIDA)
 export const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return ''
   
   return input
-    .trim()
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remover scripts
-    .replace(/<[^>]*>/g, '') // Remover HTML tags
+    .replace(/<(?!\/?(b|i|u|strong|em)\b)[^>]*>/gi, '') // Remover HTML tags peligrosos pero mantener algunos básicos
     .substring(0, 1000) // Limitar longitud
+}
+
+// Versión más suave para campos de texto normales
+export const sanitizeTextInput = (input: string): string => {
+  if (typeof input !== 'string') return ''
+  
+  // Para campos de texto normales, solo remover scripts maliciosos
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .substring(0, 1000)
 }
 
 // Esquemas para autenticación
@@ -32,7 +46,7 @@ export const signUpSchema = z.object({
   role: z.enum(['trainer', 'client'])
 })
 
-// Esquemas para ejercicios
+// Esquemas para ejercicios - CORREGIDOS
 export const exerciseSchema = z.object({
   name: z.string()
     .min(1, 'Nombre del ejercicio requerido')
@@ -58,8 +72,25 @@ export const exerciseSchema = z.object({
     .max(1000, 'Notas muy largas')
     .optional()
     .nullable(),
-  video_url: urlSchema,
-  image_url: urlSchema,
+  // URLs corregidas para ser realmente opcionales
+  video_url: z.union([
+    z.string().url('URL de video inválida'),
+    z.string().length(0),
+    z.null(),
+    z.undefined()
+  ]).optional().nullable().transform(val => {
+    if (!val || val === '') return null
+    return val
+  }),
+  image_url: z.union([
+    z.string().url('URL de imagen inválida'),
+    z.string().length(0),
+    z.null(),
+    z.undefined()
+  ]).optional().nullable().transform(val => {
+    if (!val || val === '') return null
+    return val
+  }),
   exercise_order: z.number().min(0, 'Orden debe ser positivo')
 })
 
@@ -87,9 +118,7 @@ export const mealPlanSchema = z.object({
   day_of_week: z.number()
     .min(0, 'Día inválido')
     .max(6, 'Día inválido'),
-  meal_type: z.enum(['desayuno', 'colacion', 'almuerzo', 'merienda', 'cena'], {
-    message: 'Tipo de comida inválido'
-  }),
+  meal_type: z.enum(['desayuno', 'colacion', 'almuerzo', 'merienda', 'cena'], 'Tipo de comida inválido'),
   description: z.string()
     .min(10, 'Descripción debe tener al menos 10 caracteres')
     .max(2000, 'Descripción muy larga'),
@@ -151,7 +180,7 @@ export type CreateClientData = z.infer<typeof createClientSchema>
 
 // Utilidad para formatear errores de validación
 export const formatValidationErrors = (error: z.ZodError) => {
-  return error.issues.reduce((acc, curr) => {
+  return error.issues.reduce((acc: { [x: string]: any }, curr: { path: any[]; message: any }) => {
     const path = curr.path.join('.')
     acc[path] = curr.message
     return acc
@@ -160,7 +189,7 @@ export const formatValidationErrors = (error: z.ZodError) => {
 
 // Utilidad para validar URLs de medios
 export const validateMediaUrl = (url: string, type: 'video' | 'image') => {
-  if (!url) return true // URLs vacías son válidas (opcional)
+  if (!url || url.trim() === '') return true // URLs vacías son válidas (opcional)
   
   try {
     const urlObj = new URL(url)
