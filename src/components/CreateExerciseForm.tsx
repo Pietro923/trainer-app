@@ -1,4 +1,5 @@
 // components/CreateExerciseForm.tsx - VERSIÓN ROBUSTA FINAL
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState } from 'react'
@@ -138,16 +139,23 @@ export default function CreateExerciseForm({
       console.log(`Insert completed in ${duration}ms`)
       console.log('Insert result:', result)
 
-      if (result.error) {
-        console.error('Insert error:', result.error)
-        throw new Error(`Error de base de datos: ${result.error.message}`)
+      // Type assertion to expected Supabase response type
+      type SupabaseInsertResult = {
+        data: any[] | null
+        error: { message: string } | null
+      }
+      const typedResult = result as SupabaseInsertResult
+
+      if (typedResult.error) {
+        console.error('Insert error:', typedResult.error)
+        throw new Error(`Error de base de datos: ${typedResult.error.message}`)
       }
 
-      if (!result.data || result.data.length === 0) {
+      if (!typedResult.data || typedResult.data.length === 0) {
         throw new Error('No se pudo crear el ejercicio')
       }
 
-      console.log('Exercise created successfully:', result.data[0])
+      console.log('Exercise created successfully:', typedResult.data[0])
       
       showSuccess('¡Ejercicio agregado exitosamente!')
       
@@ -316,9 +324,10 @@ export default function CreateExerciseForm({
           )}
           <Button 
             type="submit" 
-            disabled={loading || 
-              (formData.video_url && !isValidUrl(formData.video_url)) ||
-              (formData.image_url && !isValidUrl(formData.image_url))
+            disabled={
+              !!loading ||
+              (!!formData.video_url && !isValidUrl(formData.video_url)) ||
+              (!!formData.image_url && !isValidUrl(formData.image_url))
             }
           >
             {loading ? 'Agregando...' : 'Agregar Ejercicio'}

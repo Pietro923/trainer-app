@@ -1,4 +1,5 @@
 // lib/validations.ts - URLs opcionales corregidas
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod'
 import { useState, useCallback } from 'react'
 

@@ -1,4 +1,5 @@
 // hooks/useAsyncOperation.ts - Versión simplificada y más robusta
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from 'react'
 
 interface AsyncOperationState<T> {
