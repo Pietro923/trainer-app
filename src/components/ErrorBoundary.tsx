@@ -1,4 +1,5 @@
 // components/ErrorBoundary.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import React, { Component, ReactNode } from 'react'
