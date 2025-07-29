@@ -11,41 +11,86 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function LoginForm() {
   const { signIn, signUp } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
+  
+  // Estados para Sign In
+  const [signInData, setSignInData] = useState({
+    email: '',
+    password: ''
+  })
+  
+  // Estados para Sign Up
+  const [signUpData, setSignUpData] = useState({
+    email: '',
+    password: '',
+    fullName: ''
+  })
+  
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
 
-    const { error } = await signIn(email, password)
-    
-    if (error) {
-      setError(error.message)
+    console.log('LoginForm: Attempting sign in with:', signInData)
+
+    try {
+      const result = await signIn({
+        email: signInData.email,
+        password: signInData.password
+      })
+      
+      console.log('LoginForm: SignIn result:', result)
+      
+      if (!result.success) {
+        setError(result.error || 'Error al iniciar sesión')
+      }
+    } catch (err) {
+      console.error('LoginForm: SignIn error:', err)
+      setError('Error inesperado al iniciar sesión')
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
 
-    // Todos los nuevos registros son clientes por defecto
-    const { error } = await signUp(email, password, fullName, 'client')
-    
-    if (error) {
-      setError(error.message)
-    } else {
-      setError('Cuenta creada exitosamente. Revisa tu email para confirmar.')
+    console.log('LoginForm: Attempting sign up with:', signUpData)
+
+    try {
+      const result = await signUp({
+        email: signUpData.email,
+        password: signUpData.password,
+        fullName: signUpData.fullName,
+        role: 'client' // Todos los nuevos registros son clientes por defecto
+      })
+      
+      console.log('LoginForm: SignUp result:', result)
+      
+      if (result.success) {
+        setSuccess('Cuenta creada exitosamente. Revisa tu email para confirmar.')
+        // Limpiar formulario
+        setSignUpData({
+          email: '',
+          password: '',
+          fullName: ''
+        })
+      } else {
+        setError(result.error || 'Error al crear cuenta')
+      }
+    } catch (err) {
+      console.error('LoginForm: SignUp error:', err)
+      setError('Error inesperado al crear cuenta')
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   return (
@@ -58,30 +103,40 @@ export default function LoginForm() {
       <TabsContent value="signin">
         <form onSubmit={handleSignIn} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="signin-email">Email</Label>
             <Input
-              id="email"
+              id="signin-email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={signInData.email}
+              onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="tu@email.com"
               required
+              disabled={loading}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="signin-password">Contraseña</Label>
             <Input
-              id="password"
+              id="signin-password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={signInData.password}
+              onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Tu contraseña"
               required
+              disabled={loading}
             />
           </div>
 
           {error && (
-            <Alert>
+            <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && (
+            <Alert>
+              <AlertDescription className="text-green-700">{success}</AlertDescription>
             </Alert>
           )}
 
@@ -94,47 +149,64 @@ export default function LoginForm() {
       <TabsContent value="signup">
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nombre Completo</Label>
+            <Label htmlFor="signup-fullname">Nombre Completo</Label>
             <Input
-              id="fullName"
+              id="signup-fullname"
               type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={signUpData.fullName}
+              onChange={(e) => setSignUpData(prev => ({ ...prev, fullName: e.target.value }))}
+              placeholder="Tu nombre completo"
               required
+              disabled={loading}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="signup-email">Email</Label>
             <Input
-              id="email"
+              id="signup-email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={signUpData.email}
+              onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="tu@email.com"
               required
+              disabled={loading}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="signup-password">Contraseña</Label>
             <Input
-              id="password"
+              id="signup-password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={signUpData.password}
+              onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Mínimo 6 caracteres"
               required
+              disabled={loading}
+              minLength={6}
             />
           </div>
 
           {error && (
-            <Alert>
+            <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && (
+            <Alert>
+              <AlertDescription className="text-green-700">{success}</AlertDescription>
             </Alert>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
           </Button>
+          
+          <p className="text-xs text-gray-500 text-center">
+            Al registrarte, crearás una cuenta de cliente. Si eres entrenador, contacta al administrador.
+          </p>
         </form>
       </TabsContent>
     </Tabs>

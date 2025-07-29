@@ -1,139 +1,134 @@
-// components/CreateExerciseForm.tsx
+// components/forms/CreateExerciseForm.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
+import { useSupabaseOperation } from '@/hooks/useAsyncOperation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { InlineLoading } from '@/components/InlineLoading'
+import { 
+  exerciseSchema, 
+  useValidation, 
+  validateMediaUrl,
+  sanitizeInput 
+} from '@/lib/validations'
 
-type CreateExerciseFormProps = {
+interface CreateExerciseFormProps {
   routineId: string
   nextOrder: number
   onExerciseCreated: () => void
+  onCancel?: () => void
 }
 
-export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCreated }: CreateExerciseFormProps) {
-  const [name, setName] = useState('')
-  const [sets, setSets] = useState('')
-  const [reps, setReps] = useState('')
-  const [weight, setWeight] = useState('')
-  const [restTime, setRestTime] = useState('')
-  const [notes, setNotes] = useState('')
-  const [videoUrl, setVideoUrl] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+export default function CreateExerciseForm({ 
+  routineId, 
+  nextOrder, 
+  onExerciseCreated,
+  onCancel 
+}: CreateExerciseFormProps) {
+  const { user } = useAuth()
+  const { success: showSuccess, error: showError } = useToast()
+  const createOperation = useSupabaseOperation()
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    sets: '',
+    reps: '',
+    weight: '',
+    rest_time: '',
+    notes: '',
+    video_url: '',
+    image_url: ''
+  })
 
-  const validateUrl = (url: string): boolean => {
-    if (!url.trim()) return true // URLs vacías son válidas
-    try {
-      new URL(url)
-      return true
-    } catch {
-      return false
+  const { errors, validate, validateField, clearErrors } = useValidation(exerciseSchema)
+
+  const handleInputChange = useCallback((field: string, value: string) => {
+    const sanitizedValue = sanitizeInput(value)
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }))
+    
+    // Validación en tiempo real
+    if (field === 'video_url' && value) {
+      if (!validateMediaUrl(value, 'video')) {
+        validateField(field, 'URL de video inválida')
+        return
+      }
     }
-  }
+    
+    if (field === 'image_url' && value) {
+      if (!validateMediaUrl(value, 'image')) {
+        validateField(field, 'URL de imagen inválida')
+        return
+      }
+    }
+    
+    validateField(field, field === 'sets' ? (value ? parseInt(value) : null) : value)
+  }, [validateField])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    e.stopPropagation()
     
-    if (loading) return // Prevenir múltiples submits
-    
-    setLoading(true)
-    setError('')
-
-    console.log('Submitting exercise with data:', {
-      routineId,
-      name,
-      sets,
-      reps,
-      weight,
-      restTime,
-      notes,
-      videoUrl,
-      imageUrl,
-      nextOrder
-    })
-
-    // Validaciones
-    if (!name.trim()) {
-      setError('El nombre del ejercicio es obligatorio')
-      setLoading(false)
+    if (!user) {
+      showError('Usuario no autenticado')
       return
     }
 
-    if (videoUrl && !validateUrl(videoUrl)) {
-      setError('La URL del video no es válida')
-      setLoading(false)
-      return
+    // Preparar datos para validación
+    const dataToValidate = {
+      ...formData,
+      sets: formData.sets ? parseInt(formData.sets) : null,
+      exercise_order: nextOrder
     }
 
-    if (imageUrl && !validateUrl(imageUrl)) {
-      setError('La URL de la imagen no es válida')
-      setLoading(false)
+    const validation = validate(dataToValidate)
+    
+    if (!validation.success) {
+      showError('Por favor corrige los errores en el formulario')
       return
     }
 
     try {
-      const exerciseData = {
-        routine_id: routineId,
-        name: name.trim(),
-        sets: sets ? parseInt(sets) : null,
-        reps: reps.trim() || null,
-        weight: weight.trim() || null,
-        rest_time: restTime.trim() || null,
-        notes: notes.trim() || null,
-        video_url: videoUrl.trim() || null,
-        image_url: imageUrl.trim() || null,
-        exercise_order: nextOrder,
-      }
+      await createOperation.executeSupabase(async () => {
+        return supabase
+          .from('exercises')
+          .insert([{
+            routine_id: routineId,
+            name: validation.data!.name,
+            sets: validation.data!.sets,
+            reps: validation.data!.reps || null,
+            weight: validation.data!.weight || null,
+            rest_time: validation.data!.rest_time || null,
+            notes: validation.data!.notes || null,
+            video_url: validation.data!.video_url || null,
+            image_url: validation.data!.image_url || null,
+            exercise_order: nextOrder
+          }])
+          .select()
+      })
 
-      console.log('Inserting exercise data:', exerciseData)
-
-      const { data, error: insertError } = await supabase
-        .from('exercises')
-        .insert([exerciseData])
-        .select()
-
-      console.log('Insert result:', { data, error: insertError })
-
-      if (insertError) {
-        console.error('Database error:', insertError)
-        setError(`Error al crear ejercicio: ${insertError.message}`)
-        return
-      }
-
-      if (!data || data.length === 0) {
-        setError('No se pudo crear el ejercicio')
-        return
-      }
-
-      console.log('Exercise created successfully:', data[0])
-
+      showSuccess('Ejercicio agregado exitosamente')
+      
       // Limpiar formulario
-      setName('')
-      setSets('')
-      setReps('')
-      setWeight('')
-      setRestTime('')
-      setNotes('')
-      setVideoUrl('')
-      setImageUrl('')
+      setFormData({
+        name: '',
+        sets: '',
+        reps: '',
+        weight: '',
+        rest_time: '',
+        notes: '',
+        video_url: '',
+        image_url: ''
+      })
+      clearErrors()
       
-      // Pequeño delay antes de notificar para evitar race conditions
-      setTimeout(() => {
-        onExerciseCreated()
-      }, 100)
-      
-    } catch (error: any) {
-      console.error('Unexpected error:', error)
-      setError(`Error inesperado: ${error.message}`)
-    } finally {
-      setLoading(false)
+      onExerciseCreated()
+    } catch (error) {
+      showError('Error al agregar ejercicio')
     }
   }
 
@@ -141,16 +136,21 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
-          <Label htmlFor="exerciseName">Nombre del Ejercicio *</Label>
+          <Label htmlFor="exerciseName">
+            Nombre del Ejercicio *
+          </Label>
           <Input
             id="exerciseName"
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formData.name}
+            onChange={(e) => handleInputChange('name', e.target.value)}
             placeholder="Ej: Press de banca con barra"
+            className={errors.name ? 'border-red-500' : ''}
             required
-            disabled={loading}
           />
+          {errors.name && (
+            <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+          )}
         </div>
 
         <div>
@@ -158,12 +158,16 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           <Input
             id="sets"
             type="number"
-            value={sets}
-            onChange={(e) => setSets(e.target.value)}
+            value={formData.sets}
+            onChange={(e) => handleInputChange('sets', e.target.value)}
             placeholder="Ej: 4"
             min="1"
-            disabled={loading}
+            max="20"
+            className={errors.sets ? 'border-red-500' : ''}
           />
+          {errors.sets && (
+            <p className="text-sm text-red-600 mt-1">{errors.sets}</p>
+          )}
         </div>
 
         <div>
@@ -171,11 +175,14 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           <Input
             id="reps"
             type="text"
-            value={reps}
-            onChange={(e) => setReps(e.target.value)}
+            value={formData.reps}
+            onChange={(e) => handleInputChange('reps', e.target.value)}
             placeholder="Ej: 8-10, 12, al fallo"
-            disabled={loading}
+            className={errors.reps ? 'border-red-500' : ''}
           />
+          {errors.reps && (
+            <p className="text-sm text-red-600 mt-1">{errors.reps}</p>
+          )}
         </div>
 
         <div>
@@ -183,11 +190,14 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           <Input
             id="weight"
             type="text"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
+            value={formData.weight}
+            onChange={(e) => handleInputChange('weight', e.target.value)}
             placeholder="Ej: 80kg, Peso corporal"
-            disabled={loading}
+            className={errors.weight ? 'border-red-500' : ''}
           />
+          {errors.weight && (
+            <p className="text-sm text-red-600 mt-1">{errors.weight}</p>
+          )}
         </div>
 
         <div>
@@ -195,11 +205,14 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           <Input
             id="restTime"
             type="text"
-            value={restTime}
-            onChange={(e) => setRestTime(e.target.value)}
+            value={formData.rest_time}
+            onChange={(e) => handleInputChange('rest_time', e.target.value)}
             placeholder="Ej: 2-3 min, 60 seg"
-            disabled={loading}
+            className={errors.rest_time ? 'border-red-500' : ''}
           />
+          {errors.rest_time && (
+            <p className="text-sm text-red-600 mt-1">{errors.rest_time}</p>
+          )}
         </div>
       </div>
 
@@ -207,12 +220,15 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
         <Label htmlFor="notes">Notas / Instrucciones</Label>
         <Textarea
           id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          value={formData.notes}
+          onChange={(e) => handleInputChange('notes', e.target.value)}
           placeholder="Instrucciones específicas, técnica, variaciones, etc."
           rows={3}
-          disabled={loading}
+          className={errors.notes ? 'border-red-500' : ''}
         />
+        {errors.notes && (
+          <p className="text-sm text-red-600 mt-1">{errors.notes}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -221,14 +237,17 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           <Input
             id="videoUrl"
             type="url"
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
+            value={formData.video_url}
+            onChange={(e) => handleInputChange('video_url', e.target.value)}
             placeholder="https://youtube.com/watch?v=..."
-            disabled={loading}
+            className={errors.video_url ? 'border-red-500' : ''}
           />
-          {videoUrl && !validateUrl(videoUrl) && (
-            <p className="text-red-500 text-xs mt-1">URL no válida</p>
+          {errors.video_url && (
+            <p className="text-sm text-red-600 mt-1">{errors.video_url}</p>
           )}
+          <p className="text-xs text-gray-500 mt-1">
+            Soportado: YouTube, Vimeo, Dailymotion
+          </p>
         </div>
 
         <div>
@@ -236,33 +255,40 @@ export default function CreateExerciseForm({ routineId, nextOrder, onExerciseCre
           <Input
             id="imageUrl"
             type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            value={formData.image_url}
+            onChange={(e) => handleInputChange('image_url', e.target.value)}
             placeholder="https://ejemplo.com/imagen.jpg"
-            disabled={loading}
+            className={errors.image_url ? 'border-red-500' : ''}
           />
-          {imageUrl && !validateUrl(imageUrl) && (
-            <p className="text-red-500 text-xs mt-1">URL no válida</p>
+          {errors.image_url && (
+            <p className="text-sm text-red-600 mt-1">{errors.image_url}</p>
           )}
+          <p className="text-xs text-gray-500 mt-1">
+            Formatos: JPG, PNG, GIF, WebP, SVG
+          </p>
         </div>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {createOperation.loading && (
+        <InlineLoading message="Agregando ejercicio..." />
       )}
 
-      <div className="flex justify-end space-x-2">
-        <Button
-          type="submit"
-          disabled={
-            !!loading ||
-            (!!videoUrl && !validateUrl(videoUrl)) ||
-            (!!imageUrl && !validateUrl(imageUrl))
-          }
+      <div className="flex justify-end space-x-2 pt-4">
+        {onCancel && (
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={createOperation.loading}
+          >
+            Cancelar
+          </Button>
+        )}
+        <Button 
+          type="submit" 
+          disabled={createOperation.loading}
         >
-          {loading ? 'Agregando...' : 'Agregar Ejercicio'}
+          {createOperation.loading ? 'Agregando...' : 'Agregar Ejercicio'}
         </Button>
       </div>
     </form>
