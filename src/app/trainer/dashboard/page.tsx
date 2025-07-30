@@ -227,39 +227,91 @@ export default function TrainerDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Template Management */}
-          <Card className="hover:shadow-lg transition-all duration-200">
-            <CardHeader>
-              <CardTitle className="text-xl text-gray-900 flex items-center">
-                <Target className="w-5 h-5 mr-2 text-red-600" />
-                Gestión de Templates
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Crea y administra tus rutinas y planes alimenticios reutilizables
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  <Button 
-    onClick={() => router.push('/trainer/routine-templates')}
-    className="h-24 sm:h-20 flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-  >
-    <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 mb-2" />
-    <span className="font-medium text-lg sm:text-base">Templates de Rutinas</span>
-    <span className="text-xs sm:text-sm opacity-90">{routineTemplates.length} creados</span>
-  </Button>
+          <Card className="border-0 bg-gradient-to-br from-white via-gray-50/50 to-red-50/30 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+  <CardHeader className="pb-6">
+    <div className="flex items-center space-x-3">
+      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+        <Target className="w-6 h-6 text-white" />
+      </div>
+      <div>
+        <CardTitle className="text-xl sm:text-2xl text-gray-900 font-bold">
+          Gestión de Templates
+        </CardTitle>
+        <CardDescription className="text-gray-600 mt-1">
+          Crea y administra tus rutinas y planes alimenticios reutilizables
+        </CardDescription>
+      </div>
+    </div>
+  </CardHeader>
   
-  <Button 
-    onClick={() => router.push('/trainer/meal-templates')}
-    variant="outline"
-    className="h-24 sm:h-20 flex flex-col items-center justify-center border-2 border-green-300 hover:border-green-400 hover:bg-green-50 text-green-700 hover:text-green-800 transition-all duration-200"
-  >
-    <ChefHat className="w-6 h-6 sm:w-7 sm:h-7 mb-2" />
-    <span className="font-medium text-lg sm:text-base">Templates de Comida</span>
-    <span className="text-xs sm:text-sm opacity-75">{mealTemplates.length} creados</span>
-  </Button>
-</div>
-            </CardContent>
-          </Card>
+  <CardContent className="pt-0">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Template de Rutinas */}
+      <div 
+        onClick={() => router.push('/trainer/routine-templates')}
+        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl"
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center text-center space-y-3">
+          <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <BookOpen className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white mb-1">
+              Templates de Rutinas
+            </h3>
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-blue-100 text-sm">
+                {routineTemplates.length} creados
+              </span>
+              {routineTemplates.length > 0 && (
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Shine Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+      </div>
+
+      {/* Template de Comidas */}
+      <div 
+        onClick={() => router.push('/trainer/meal-templates')}
+        className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:border-green-300"
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center text-center space-y-3">
+          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <ChefHat className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-green-800 mb-1">
+              Templates de Comida
+            </h3>
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-green-600 text-sm">
+                {mealTemplates.length} creados
+              </span>
+              {mealTemplates.length > 0 && (
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Shine Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
           {/* Recent Templates */}
           <Card className="hover:shadow-lg transition-all duration-200">

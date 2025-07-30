@@ -304,7 +304,7 @@ export default function LoginForm() {
         <p className="text-sm text-gray-500">
           ¿Necesitas ayuda? {" "}
           <a 
-            href="mailto:soporte@trainerapp.com" 
+            href="mailto:jpbonacossa@gmail.com" 
             className="text-red-600 hover:text-red-700 font-medium transition-colors"
           >
             Contacta soporte
