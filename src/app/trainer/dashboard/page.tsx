@@ -238,26 +238,26 @@ export default function TrainerDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-1 gap-4">
-                <Button 
-                  onClick={() => router.push('/trainer/routine-templates')}
-                  className="h-20 flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  <BookOpen className="w-6 h-6 mb-2" />
-                  <span className="font-medium">Templates de Rutinas</span>
-                  <span className="text-xs opacity-90">{routineTemplates.length} creados</span>
-                </Button>
-                
-                <Button 
-                  onClick={() => router.push('/trainer/meal-templates')}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center border-2 border-green-300 hover:border-green-400 hover:bg-green-50 text-green-700 hover:text-green-800 transition-all duration-200"
-                >
-                  <ChefHat className="w-6 h-6 mb-2" />
-                  <span className="font-medium">Templates de Comida</span>
-                  <span className="text-xs opacity-75">{mealTemplates.length} creados</span>
-                </Button>
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <Button 
+    onClick={() => router.push('/trainer/routine-templates')}
+    className="h-24 sm:h-20 flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+  >
+    <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 mb-2" />
+    <span className="font-medium text-lg sm:text-base">Templates de Rutinas</span>
+    <span className="text-xs sm:text-sm opacity-90">{routineTemplates.length} creados</span>
+  </Button>
+  
+  <Button 
+    onClick={() => router.push('/trainer/meal-templates')}
+    variant="outline"
+    className="h-24 sm:h-20 flex flex-col items-center justify-center border-2 border-green-300 hover:border-green-400 hover:bg-green-50 text-green-700 hover:text-green-800 transition-all duration-200"
+  >
+    <ChefHat className="w-6 h-6 sm:w-7 sm:h-7 mb-2" />
+    <span className="font-medium text-lg sm:text-base">Templates de Comida</span>
+    <span className="text-xs sm:text-sm opacity-75">{mealTemplates.length} creados</span>
+  </Button>
+</div>
             </CardContent>
           </Card>
 
@@ -444,26 +444,26 @@ export default function TrainerDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/trainer/client/${client.id}/assign-routines`)}
-                          className="flex-1 sm:flex-none border-gray-300 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50"
-                        >
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Asignar Rutinas
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/trainer/client/${client.id}/assign-meals`)}
-                          className="flex-1 sm:flex-none border-gray-300 hover:border-green-300 hover:text-green-600 hover:bg-green-50"
-                        >
-                          <Utensils className="w-4 h-4 mr-2" />
-                          Asignar Comidas
-                        </Button>
-                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 sm:space-y-0">
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => router.push(`/trainer/client/${client.id}/assign-routines`)}
+    className="w-full sm:flex-1 border-gray-300 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 text-xs sm:text-sm"
+  >
+    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+    <span className="truncate">Asignar Rutinas</span>
+  </Button>
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => router.push(`/trainer/client/${client.id}/assign-meals`)}
+    className="w-full sm:flex-1 border-gray-300 hover:border-green-300 hover:text-green-600 hover:bg-green-50 text-xs sm:text-sm"
+  >
+    <Utensils className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+    <span className="truncate">Asignar Comidas</span>
+  </Button>
+</div>
                     </div>
                   </div>
                 ))}

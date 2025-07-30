@@ -72,7 +72,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
-          <Label htmlFor="name">Nombre del Ejercicio *</Label>
+          <Label htmlFor="name" className='mb-2'>Nombre del Ejercicio </Label>
           <Input
             id="name"
             value={formData.name}
@@ -84,7 +84,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
         </div>
         
         <div>
-          <Label htmlFor="sets">Series</Label>
+          <Label htmlFor="sets" className='mb-2'>Series</Label>
           <Input
             id="sets"
             type="number"
@@ -98,7 +98,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
         </div>
         
         <div>
-          <Label htmlFor="reps">Repeticiones</Label>
+          <Label htmlFor="reps" className='mb-2'>Repeticiones</Label>
           <Input
             id="reps"
             value={formData.reps}
@@ -109,7 +109,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
         </div>
         
         <div>
-          <Label htmlFor="weight">Peso</Label>
+          <Label htmlFor="weight" className='mb-2'>Peso</Label>
           <Input
             id="weight"
             value={formData.weight}
@@ -120,7 +120,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
         </div>
         
         <div>
-          <Label htmlFor="rest_time">Tiempo de Descanso</Label>
+          <Label htmlFor="rest_time" className='mb-2'>Tiempo de Descanso</Label>
           <Input
             id="rest_time"
             value={formData.rest_time}
@@ -132,7 +132,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
       </div>
 
       <div>
-        <Label htmlFor="notes">Notas / Instrucciones</Label>
+        <Label htmlFor="notes" className='mb-2'>Notas / Instrucciones</Label>
         <Textarea
           id="notes"
           value={formData.notes}
@@ -145,7 +145,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="video_url">URL del Video (opcional)</Label>
+          <Label htmlFor="video_url" className='mb-2'>URL del Video (opcional)</Label>
           <Input
             id="video_url"
             type="url"
@@ -161,7 +161,7 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
         </div>
         
         <div>
-          <Label htmlFor="image_url">URL de la Imagen (opcional)</Label>
+          <Label htmlFor="image_url" className='mb-2'>URL de la Imagen (opcional)</Label>
           <Input
             id="image_url"
             type="url"
@@ -458,71 +458,72 @@ export default function TemplateExercisesPage() {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => router.push('/trainer/routine-templates')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    {template.name}
-                  </h1>
-                  <p className="text-gray-600">
-                    {template.muscle_group} • {exercises.length} ejercicio(s)
-                  </p>
-                </div>
-              </div>
-            </div>
+            <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
+  <Button 
+    variant="ghost" 
+    onClick={() => router.push('/trainer/routine-templates')}
+    className="p-2 hover:bg-red-50 hover:text-red-600 flex-shrink-0"
+  >
+    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+  </Button>
+  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+      <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+    </div>
+    <div className="min-w-0 flex-1">
+      <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+        {template.name}
+      </h1>
+      <p className="text-sm sm:text-base text-gray-600 truncate">
+        {template.muscle_group} • {exercises.length} ejercicio(s)
+      </p>
+    </div>
+  </div>
+</div>
             
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="shadow-lg">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar Ejercicio
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Agregar Ejercicio al Template</DialogTitle>
-                  <DialogDescription>
-                    Agrega un nuevo ejercicio a &quot;{template.name}&quot;
-                  </DialogDescription>
-                </DialogHeader>
-                <ExerciseForm 
-                  formData={formData}
-                  onFormDataChange={handleFormDataChange}
-                  onSubmit={handleCreateExercise}
-                  onCancel={handleCancel}
-                  formLoading={formLoading}
-                />
-              </DialogContent>
-            </Dialog>
+  <DialogTrigger asChild>
+    <Button className="shadow-lg btn-responsive">
+      <Plus className="w-4 h-4 mr-2" />
+      <span className="hidden sm:inline">Agregar Ejercicio</span>
+      <span className="sm:hidden">Agregar</span>
+    </Button>
+  </DialogTrigger>
+  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle className="text-lg sm:text-xl">Agregar Ejercicio al Template</DialogTitle>
+      <DialogDescription className="text-sm sm:text-base">
+        Agrega un nuevo ejercicio a &quot;{template.name}&quot;
+      </DialogDescription>
+    </DialogHeader>
+    <ExerciseForm 
+      formData={formData}
+      onFormDataChange={handleFormDataChange}
+      onSubmit={handleCreateExercise}
+      onCancel={handleCancel}
+      formLoading={formLoading}
+    />
+  </DialogContent>
+</Dialog>
 
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Editar Ejercicio</DialogTitle>
-                  <DialogDescription>
-                    Modifica los detalles del ejercicio &quot;{editingExercise?.name}&quot;
-                  </DialogDescription>
-                </DialogHeader>
-                <ExerciseForm 
-                  formData={formData}
-                  onFormDataChange={handleFormDataChange}
-                  onSubmit={handleEditExercise}
-                  onCancel={handleCancel}
-                  isEdit
-                  formLoading={formLoading}
-                />
-              </DialogContent>
-            </Dialog>
+<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle className="text-lg sm:text-xl">Editar Ejercicio</DialogTitle>
+      <DialogDescription className="text-sm sm:text-base">
+        Modifica los detalles del ejercicio &quot;{editingExercise?.name}&quot;
+      </DialogDescription>
+    </DialogHeader>
+    <ExerciseForm 
+      formData={formData}
+      onFormDataChange={handleFormDataChange}
+      onSubmit={handleEditExercise}
+      onCancel={handleCancel}
+      isEdit
+      formLoading={formLoading}
+    />
+  </DialogContent>
+</Dialog>
           </div>
         </div>
       </header>

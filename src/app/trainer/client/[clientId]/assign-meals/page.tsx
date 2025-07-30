@@ -370,116 +370,120 @@ export default function AssignMealsPage() {
         </Card>
 
         {/* Current Assignment */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Apple className="w-5 h-5 mr-2 text-green-600" />
-              Plan Alimenticio Asignado
-            </CardTitle>
-            <CardDescription>
-              {currentAssignment 
-                ? 'Plan nutricional activo para el cliente'
-                : 'No hay plan alimenticio asignado aún'
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {currentAssignment ? (
-              <div className="border-2 border-green-200 bg-green-50 rounded-xl p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-green-700" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                        {currentAssignment.template.name}
-                      </h3>
-                      <div className="flex items-center space-x-3 mb-3">
-                        {currentAssignment.template.goal && (
-                          <Badge className={getGoalColor(currentAssignment.template.goal)}>
-                            {getGoalLabel(currentAssignment.template.goal)}
-                          </Badge>
-                        )}
-                        <span className="text-sm text-gray-600">
-                          Asignado el {new Date(currentAssignment.assigned_at).toLocaleDateString('es-ES')}
-                        </span>
-                      </div>
-                      {currentAssignment.template.description && (
-                        <p className="text-sm text-gray-700 bg-white p-3 rounded-lg mb-3">
-                          {currentAssignment.template.description}
-                        </p>
-                      )}
-                      {currentAssignment.custom_notes && (
-                        <div className="bg-white p-3 rounded-lg border-l-4 border-green-500">
-                          <p className="text-sm text-gray-700">
-                            <strong className="text-green-700">Notas personalizadas:</strong> {currentAssignment.custom_notes}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedTemplate(currentAssignment.template_id)
-                        setCustomNotes(currentAssignment.custom_notes || '')
-                        setAssignDialogOpen(true)
-                      }}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    >
-                      <Activity className="w-4 h-4 mr-1" />
-                      Cambiar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveAssignment(currentAssignment.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Remover
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <AlertCircle className="w-12 h-12 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-medium text-gray-900 mb-3">
-                  No hay plan alimenticio asignado
-                </h3>
-                <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                  Asigna un plan nutricional a {client?.full_name} para ayudarle a alcanzar sus objetivos de salud y fitness
-                </p>
-                {mealTemplates.length > 0 ? (
-                  <Button onClick={() => setAssignDialogOpen(true)} size="lg" className="bg-green-600 hover:bg-green-700">
-                    <Plus className="w-5 h-5 mr-2" />
-                    Asignar Plan Alimenticio
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg">
-                      No tienes templates de alimentación creados
-                    </p>
-                    <Button 
-                      onClick={() => router.push('/trainer/meal-templates')} 
-                      size="lg" 
-                      variant="outline"
-                    >
-                      <Apple className="w-5 h-5 mr-2" />
-                      Crear Templates de Alimentación
-                    </Button>
-                  </div>
+       <Card>
+  <CardHeader>
+    <CardTitle className="flex items-center">
+      <Apple className="w-5 h-5 mr-2 text-green-600" />
+      Plan Alimenticio Asignado
+    </CardTitle>
+    <CardDescription>
+      {currentAssignment 
+        ? 'Plan nutricional activo para el cliente'
+        : 'No hay plan alimenticio asignado aún'
+      }
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    {currentAssignment ? (
+      <div className="border-2 border-green-200 bg-green-50 rounded-xl p-4 sm:p-6">
+        {/* Layout responsive: columna en móvil, fila en desktop */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+          {/* Información principal */}
+          <div className="flex items-start space-x-4 flex-1 min-w-0">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1 break-words">
+                {currentAssignment.template.name}
+              </h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-3 gap-2">
+                {currentAssignment.template.goal && (
+                  <Badge className={getGoalColor(currentAssignment.template.goal)}>
+                    {getGoalLabel(currentAssignment.template.goal)}
+                  </Badge>
                 )}
+                <span className="text-xs sm:text-sm text-gray-600">
+                  Asignado el {new Date(currentAssignment.assigned_at).toLocaleDateString('es-ES')}
+                </span>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              {currentAssignment.template.description && (
+                <p className="text-sm text-gray-700 bg-white p-3 rounded-lg mb-3 break-words">
+                  {currentAssignment.template.description}
+                </p>
+              )}
+              {currentAssignment.custom_notes && (
+                <div className="bg-white p-3 rounded-lg border-l-4 border-green-500">
+                  <p className="text-sm text-gray-700 break-words">
+                    <strong className="text-green-700">Notas personalizadas:</strong> {currentAssignment.custom_notes}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Botones - responsive */}
+          <div className="flex flex-row sm:flex-col gap-2 lg:flex-col lg:w-auto w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedTemplate(currentAssignment.template_id)
+                setCustomNotes(currentAssignment.custom_notes || '')
+                setAssignDialogOpen(true)
+              }}
+              className="flex-1 sm:flex-none lg:w-24 text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
+            >
+              <Activity className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              Cambiar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleRemoveAssignment(currentAssignment.id)}
+              className="flex-1 sm:flex-none lg:w-24 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
+            >
+              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              Remover
+            </Button>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="text-center py-12">
+        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="w-12 h-12 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-medium text-gray-900 mb-3">
+          No hay plan alimenticio asignado
+        </h3>
+        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+          Asigna un plan nutricional a {client?.full_name} para ayudarle a alcanzar sus objetivos de salud y fitness
+        </p>
+        {mealTemplates.length > 0 ? (
+          <Button onClick={() => setAssignDialogOpen(true)} size="lg" className="bg-green-600 hover:bg-green-700">
+            <Plus className="w-5 h-5 mr-2" />
+            Asignar Plan Alimenticio
+          </Button>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg">
+              No tienes templates de alimentación creados
+            </p>
+            <Button 
+              onClick={() => router.push('/trainer/meal-templates')} 
+              size="lg" 
+              variant="outline"
+            >
+              <Apple className="w-5 h-5 mr-2" />
+              Crear Templates de Alimentación
+            </Button>
+          </div>
+        )}
+      </div>
+    )}
+  </CardContent>
+</Card>
 
         {/* Available Templates */}
         {mealTemplates.length > 0 && (

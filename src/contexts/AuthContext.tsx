@@ -1,4 +1,5 @@
-// contexts/AuthContext.tsx - Versión simplificada y más robusta
+// contexts/AuthContext.tsx - Versión mejorada y robusta
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
@@ -37,6 +38,10 @@ export const useAuth = () => {
   return context
 }
 
+// Cache de perfiles para evitar requests innecesarios
+const profileCache = new Map<string, { profile: Profile | null; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -47,14 +52,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   })
 
   const { success: showSuccess, error: showError } = useToast()
+  
+  // Referencias para evitar race conditions
   const mountedRef = useRef(true)
   const initializingRef = useRef(false)
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const sessionSubscriptionRef = useRef<any>(null)
 
-  // Función simple para obtener perfil
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  // Función robusta para obtener perfil con cache y retry
+  const fetchProfile = useCallback(async (userId: string, retryCount = 0): Promise<Profile | null> => {
+    const MAX_RETRIES = 3
+    const RETRY_DELAY = 1000 // 1 segundo
+
     try {
-      console.log('Fetching profile for user:', userId)
+      console.log(`[Auth] Fetching profile for user: ${userId}, attempt: ${retryCount + 1}`)
       
+      // Verificar cache primero
+      const cached = profileCache.get(userId)
+      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        console.log('[Auth] Using cached profile')
+        return cached.profile
+      }
+
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -62,11 +81,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single()
 
       if (error) {
-        console.log('Profile fetch error:', error)
-        
-        // Si el perfil no existe, crear uno básico
+        // Si el perfil no existe, intentar crear uno básico
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating basic profile')
+          console.log('[Auth] Profile not found, attempting to create...')
           
           const { data: user } = await supabase.auth.getUser()
           if (user.user && user.user.id === userId) {
@@ -85,50 +102,69 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               .single()
 
             if (createError) {
-              console.error('Error creating profile:', createError)
-              return null
+              throw createError
             }
             
-            console.log('Profile created successfully:', createdProfile)
+            console.log('[Auth] Profile created successfully')
+            // Actualizar cache
+            profileCache.set(userId, { profile: createdProfile, timestamp: Date.now() })
             return createdProfile
           }
         }
-        return null
+        throw error
       }
 
-      console.log('Profile fetched successfully:', profile)
+      console.log('[Auth] Profile fetched successfully')
+      // Actualizar cache
+      profileCache.set(userId, { profile, timestamp: Date.now() })
       return profile
+
     } catch (error) {
-      console.error('Error in fetchProfile:', error)
+      console.error(`[Auth] Error fetching profile (attempt ${retryCount + 1}):`, error)
+      
+      // Retry en caso de error de red
+      if (retryCount < MAX_RETRIES && 
+          (error instanceof Error && 
+           (error.message.includes('network') || 
+            error.message.includes('timeout') ||
+            error.message.includes('fetch')))) {
+        
+        console.log(`[Auth] Retrying profile fetch in ${RETRY_DELAY}ms...`)
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retryCount + 1)))
+        return fetchProfile(userId, retryCount + 1)
+      }
+      
       return null
     }
   }, [])
 
-  // Función simple de inicialización
+  // Función de inicialización robusta con singleton pattern
   const initializeAuth = useCallback(async () => {
-    if (initializingRef.current || state.initialized) return
+    if (initializingRef.current || state.initialized) {
+      console.log('[Auth] Already initializing or initialized, skipping...')
+      return
+    }
     
-    console.log('Initializing auth...')
+    console.log('[Auth] Starting initialization...')
     initializingRef.current = true
 
     try {
-      const { data: { session }, error } = await supabase.auth.getSession()
+      // Verificar sesión actual
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
-      if (error) {
-        console.error('Session error:', error)
-        setState({
-          user: null,
-          profile: null,
-          loading: false,
-          initialized: true,
-          error: error.message
-        })
-        return
+      if (sessionError) {
+        console.error('[Auth] Session error:', sessionError)
+        throw sessionError
       }
 
       if (session?.user) {
-        console.log('User session found:', session.user.id)
+        console.log('[Auth] Active session found for user:', session.user.id)
+        
+        // Obtener perfil con retry
         const profile = await fetchProfile(session.user.id)
+        
+        if (!mountedRef.current) return
+
         setState({
           user: session.user,
           profile,
@@ -136,8 +172,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           initialized: true,
           error: null
         })
+
+        console.log('[Auth] Initialization completed with user')
       } else {
-        console.log('No user session found')
+        console.log('[Auth] No active session found')
+        
+        if (!mountedRef.current) return
+
         setState({
           user: null,
           profile: null,
@@ -147,7 +188,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         })
       }
     } catch (error) {
-      console.error('Auth initialization error:', error)
+      console.error('[Auth] Initialization error:', error)
+      
+      if (!mountedRef.current) return
+
       setState({
         user: null,
         profile: null,
@@ -158,70 +202,119 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       initializingRef.current = false
     }
-  }, [fetchProfile])
+  }, [fetchProfile, state.initialized])
 
-  // Efecto principal (solo se ejecuta una vez)
+  // Limpiar timeouts al desmontar
   useEffect(() => {
-    console.log('AuthProvider mounted')
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+      }
+      if (sessionSubscriptionRef.current) {
+        sessionSubscriptionRef.current.unsubscribe()
+      }
+    }
+  }, [])
+
+  // Efecto principal de inicialización
+  useEffect(() => {
+    console.log('[Auth] AuthProvider mounted')
     mountedRef.current = true
     
-    // Inicializar solo si no se ha hecho antes
+    // Inicializar solo una vez
     if (!state.initialized && !initializingRef.current) {
       initializeAuth()
     }
 
-    // Listener de cambios de auth
+    // Configurar listener de cambios de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id)
+        console.log('[Auth] Auth state changed:', event, session?.user?.id)
         
         if (!mountedRef.current) return
 
         try {
-          if (session?.user && event !== 'TOKEN_REFRESHED') {
-            const profile = await fetchProfile(session.user.id)
-            setState(prev => ({
-              ...prev,
-              user: session.user,
-              profile,
-              loading: false,
-              error: null
-            }))
+          // Manejar diferentes eventos
+          switch (event) {
+            case 'SIGNED_IN':
+              if (session?.user) {
+                console.log('[Auth] User signed in, fetching profile...')
+                const profile = await fetchProfile(session.user.id)
+                
+                setState(prev => ({
+                  ...prev,
+                  user: session.user,
+                  profile,
+                  loading: false,
+                  error: null
+                }))
 
-            if (event === 'SIGNED_IN' && profile) {
-              showSuccess(`¡Bienvenido, ${profile.full_name}!`)
-            }
-          } else if (event === 'SIGNED_OUT') {
-            setState(prev => ({
-              ...prev,
-              user: null,
-              profile: null,
-              loading: false,
-              error: null
-            }))
-            showSuccess('Sesión cerrada correctamente')
+                if (profile) {
+                  showSuccess(`¡Bienvenido, ${profile.full_name}!`)
+                }
+              }
+              break
+
+            case 'SIGNED_OUT':
+              console.log('[Auth] User signed out')
+              // Limpiar cache
+              profileCache.clear()
+              
+              setState(prev => ({
+                ...prev,
+                user: null,
+                profile: null,
+                loading: false,
+                error: null
+              }))
+              showSuccess('Sesión cerrada correctamente')
+              break
+
+            case 'TOKEN_REFRESHED':
+              console.log('[Auth] Token refreshed')
+              // No hacer nada especial, solo mantener la sesión
+              break
+
+            case 'USER_UPDATED':
+              if (session?.user) {
+                console.log('[Auth] User updated, refreshing profile...')
+                const profile = await fetchProfile(session.user.id)
+                setState(prev => ({
+                  ...prev,
+                  user: session.user,
+                  profile,
+                  error: null
+                }))
+              }
+              break
+
+            default:
+              console.log('[Auth] Unhandled auth event:', event)
           }
         } catch (error) {
-          console.error('Error in auth state change:', error)
+          console.error('[Auth] Error handling auth state change:', error)
+          setState(prev => ({
+            ...prev,
+            error: error instanceof Error ? error.message : 'Error de autenticación'
+          }))
         }
       }
     )
 
+    sessionSubscriptionRef.current = subscription
+
     return () => {
-      console.log('AuthProvider unmounting')
+      console.log('[Auth] AuthProvider unmounting')
       mountedRef.current = false
       subscription.unsubscribe()
     }
-  }, []) // Array de dependencias vacío - solo se ejecuta una vez
+  }, [initializeAuth, fetchProfile, showSuccess])
 
-  // Funciones de autenticación (simplificadas)
+  // Función de sign in mejorada
   const signIn = useCallback(async (data: SignInData): Promise<{ success: boolean; error?: string }> => {
-    console.log('=== SIGNIN DEBUG ===')
-    console.log('Data received:', data)
+    console.log('[Auth] Starting sign in process')
     
     const validation = validateSignIn(data)
-    console.log('Validation result:', validation)
-    
     if (!validation.success) {
       const firstError = validation.error?.issues?.[0]?.message || 'Datos inválidos'
       showError(firstError)
@@ -244,15 +337,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error('No se pudo iniciar sesión')
       }
 
+      // El estado se actualizará automáticamente via onAuthStateChange
+      console.log('[Auth] Sign in successful')
       return { success: true }
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al iniciar sesión'
+      console.error('[Auth] Sign in error:', errorMessage)
       showError(errorMessage)
       setState(prev => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }, [showError])
 
+  // Función de sign up mejorada
   const signUp = useCallback(async (data: SignUpData): Promise<{ success: boolean; error?: string }> => {
     const validation = validateSignUp(data)
     
@@ -287,6 +385,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       showSuccess('Cuenta creada exitosamente. Revisa tu email para confirmar.')
       setState(prev => ({ ...prev, loading: false }))
       return { success: true }
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al crear cuenta'
       showError(errorMessage)
@@ -295,29 +394,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [showError, showSuccess])
 
+  // Función de sign out mejorada
   const signOut = useCallback(async () => {
     try {
+      console.log('[Auth] Starting sign out process')
       setState(prev => ({ ...prev, loading: true }))
+      
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+
+      // Limpiar cache
+      profileCache.clear()
+      
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('[Auth] Error signing out:', error)
       showError('Error al cerrar sesión')
       setState(prev => ({ ...prev, loading: false }))
     }
   }, [showError])
 
+  // Función para refrescar perfil
   const refreshProfile = useCallback(async () => {
     if (!state.user?.id) return
+    
     try {
+      console.log('[Auth] Refreshing profile...')
+      // Limpiar cache para forzar fetch
+      profileCache.delete(state.user.id)
+      
       const profile = await fetchProfile(state.user.id)
       setState(prev => ({ ...prev, profile }))
+      
     } catch (error) {
-      console.error('Error refreshing profile:', error)
+      console.error('[Auth] Error refreshing profile:', error)
       showError('Error al actualizar perfil')
     }
   }, [state.user?.id, fetchProfile, showError])
 
+  // Función para actualizar perfil
   const updateProfile = useCallback(async (updates: Partial<Profile>): Promise<{ success: boolean; error?: string }> => {
     if (!state.user?.id || !state.profile) {
       return { success: false, error: 'No hay usuario autenticado' }
@@ -333,9 +447,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error
 
+      // Actualizar cache
+      profileCache.set(state.user.id, { profile: data, timestamp: Date.now() })
+      
       setState(prev => ({ ...prev, profile: data }))
       showSuccess('Perfil actualizado correctamente')
       return { success: true }
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al actualizar perfil'
       showError(errorMessage)
@@ -343,6 +461,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [state.user?.id, state.profile, showSuccess, showError])
 
+  // Función para reset de password
   const resetPassword = useCallback(async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -353,6 +472,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       showSuccess('Se ha enviado un enlace de recuperación a tu email')
       return { success: true }
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al enviar email de recuperación'
       showError(errorMessage)

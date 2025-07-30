@@ -248,132 +248,145 @@ export default function RoutineTemplatesPage() {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => router.push('/trainer/dashboard')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Templates de Rutinas
-                  </h1>
-                  <p className="text-gray-600">Crea y gestiona tus rutinas reutilizables</p>
-                </div>
-              </div>
-            </div>
+            <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
+  <Button 
+    variant="ghost" 
+    onClick={() => router.push('/trainer/dashboard')}
+    className="p-2 hover:bg-red-50 hover:text-red-600 flex-shrink-0"
+  >
+    <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+  </Button>
+  <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+      <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+    </div>
+    <div className="min-w-0 flex-1">
+      <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+        Templates de Rutinas
+      </h1>
+      <p className="text-sm sm:text-base text-gray-600 truncate">
+        Crea y gestiona tus rutinas reutilizables
+      </p>
+    </div>
+  </div>
+</div>
             
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="shadow-lg">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nuevo Template
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Crear Nuevo Template de Rutina</DialogTitle>
-                  <DialogDescription>
-                    Crea un template reutilizable que podrás asignar a múltiples clientes
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <form onSubmit={handleCreateTemplate} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                      <Label htmlFor="name">Nombre del Template *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Ej: Pecho Intenso, Piernas Completo"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="muscle_group">Grupo Muscular *</Label>
-                      <Select 
-                        value={formData.muscle_group} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, muscle_group: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona grupo muscular" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MUSCLE_GROUPS.map(group => (
-                            <SelectItem key={group} value={group}>
-                              {group}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="difficulty_level">Dificultad</Label>
-                      <Select 
-                        value={formData.difficulty_level} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona dificultad" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DIFFICULTY_LEVELS.map(level => (
-                            <SelectItem key={level.value} value={level.value}>
-                              {level.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="estimated_duration">Duración Estimada (min)</Label>
-                      <Input
-                        id="estimated_duration"
-                        type="number"
-                        value={formData.estimated_duration}
-                        onChange={(e) => setFormData(prev => ({ ...prev, estimated_duration: e.target.value }))}
-                        placeholder="45"
-                        min="1"
-                        max="300"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label htmlFor="description">Descripción</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Describe los objetivos y características de esta rutina..."
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setCreateDialogOpen(false)}
-                      disabled={createLoading}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={createLoading}
-                    >
-                      {createLoading ? 'Creando...' : 'Crear y Agregar Ejercicios'}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+  <DialogTrigger asChild>
+    <Button className="shadow-lg btn-responsive">
+      <Plus className="w-4 h-4 mr-2" />
+      <span className="hidden sm:inline">Nuevo Template</span>
+      <span className="sm:hidden">Nuevo</span>
+    </Button>
+  </DialogTrigger>
+  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle className="text-lg sm:text-xl">Crear Nuevo Template de Rutina</DialogTitle>
+      <DialogDescription className="text-sm sm:text-base">
+        Crea un template reutilizable que podrás asignar a múltiples clientes
+      </DialogDescription>
+    </DialogHeader>
+    
+    <form onSubmit={handleCreateTemplate} className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <Label htmlFor="name" className="text-sm sm:text-base">Nombre del Template *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Ej: Pecho Intenso, Piernas Completo"
+            className="input-premium"
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="muscle_group" className="text-sm sm:text-base">Grupo Muscular *</Label>
+          <Select 
+            value={formData.muscle_group} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, muscle_group: value }))}
+          >
+            <SelectTrigger className="input-premium">
+              <SelectValue placeholder="Selecciona grupo muscular" />
+            </SelectTrigger>
+            <SelectContent>
+              {MUSCLE_GROUPS.map(group => (
+                <SelectItem key={group} value={group}>
+                  {group}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="difficulty_level" className="text-sm sm:text-base">Dificultad</Label>
+          <Select 
+            value={formData.difficulty_level} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
+          >
+            <SelectTrigger className="input-premium">
+              <SelectValue placeholder="Selecciona dificultad" />
+            </SelectTrigger>
+            <SelectContent>
+              {DIFFICULTY_LEVELS.map(level => (
+                <SelectItem key={level.value} value={level.value}>
+                  {level.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="estimated_duration" className="text-sm sm:text-base">Duración Estimada (min)</Label>
+          <Input
+            id="estimated_duration"
+            type="number"
+            value={formData.estimated_duration}
+            onChange={(e) => setFormData(prev => ({ ...prev, estimated_duration: e.target.value }))}
+            placeholder="45"
+            className="input-premium"
+            min="1"
+            max="300"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <Label htmlFor="description" className="text-sm sm:text-base">Descripción</Label>
+          <Textarea
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="Describe los objetivos y características de esta rutina..."
+            className="input-premium resize-none"
+            rows={3}
+          />
+        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2 pt-4">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => setCreateDialogOpen(false)}
+          disabled={createLoading}
+          className="btn-responsive order-2 sm:order-1"
+        >
+          Cancelar
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={createLoading}
+          className="btn-responsive order-1 sm:order-2"
+        >
+          {createLoading ? 'Creando...' : (
+            <>
+              <span className="hidden sm:inline">Crear y Agregar Ejercicios</span>
+              <span className="sm:hidden">Crear Template</span>
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  </DialogContent>
+</Dialog>
           </div>
         </div>
       </header>
