@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase, Routine, Exercise, Profile } from '@/lib/supabase'
@@ -41,44 +41,31 @@ export default function RoutineExercises() {
   }, [user, profile, router, routineId])
 
   const fetchRoutineData = async () => {
-  try {
-    console.log('=== FETCHING ROUTINE DATA ===')
-    console.log('Routine ID:', routineId)
-    
-    const { data: routineData, error: routineError } = await supabase
-      .from('routines')
-      .select(`
-        *,
-        client:profiles!routines_client_id_fkey(*),
-        exercises(*)
-      `)
-      .eq('id', routineId)
-      .single()
+    try {
+      const { data: routineData, error: routineError } = await supabase
+        .from('routines')
+        .select(`
+          *,
+          client:profiles!routines_client_id_fkey(*),
+          exercises(*)
+        `)
+        .eq('id', routineId)
+        .single()
 
-    console.log('Fetch result:', { routineData, routineError })
-
-    if (routineError) {
-      console.error('Error fetching routine:', routineError)
-      router.push('/trainer/dashboard')
-    } else if (routineData) {
-      console.log('Setting routine data:', routineData)
-      setRoutine(routineData)
-      
-      console.log('Setting exercises:', routineData.exercises)
-      setExercises(routineData.exercises.sort((a: any, b: any) => a.exercise_order - b.exercise_order))
-      
-      console.log('Fetch completed successfully')
+      if (routineError) {
+        router.push('/trainer/dashboard')
+      } else if (routineData) {
+        setRoutine(routineData)
+        setExercises(routineData.exercises.sort((a: any, b: any) => a.exercise_order - b.exercise_order))
+      }
+    } catch (error) {
+      // Manejar error silenciosamente o mostrar notificación
+    } finally {
+      setLoading(false)
     }
-  } catch (error) {
-    console.error('Error in fetchRoutineData:', error)
-    // NO redirigir en caso de error, solo mostrar error
-  } finally {
-    setLoading(false)
   }
-}
 
   const handleExerciseCreated = () => {
-    console.log('Exercise created, closing modal and refreshing data...')
     setCreateExerciseOpen(false)
     fetchRoutineData()
   }
@@ -105,13 +92,11 @@ export default function RoutineExercises() {
         .delete()
         .eq('id', exerciseId)
 
-      if (error) {
-        console.error('Error deleting exercise:', error)
-      } else {
+      if (!error) {
         fetchRoutineData()
       }
     } catch (error) {
-      console.error('Error:', error)
+      // Manejar error silenciosamente o mostrar notificación
     }
   }
 
@@ -122,13 +107,11 @@ export default function RoutineExercises() {
         .update({ exercise_order: newOrder })
         .eq('id', exerciseId)
 
-      if (error) {
-        console.error('Error updating exercise order:', error)
-      } else {
+      if (!error) {
         fetchRoutineData()
       }
     } catch (error) {
-      console.error('Error:', error)
+      // Manejar error silenciosamente o mostrar notificación
     }
   }
 
@@ -138,7 +121,7 @@ export default function RoutineExercises() {
 
     const exercise = exercises[index]
     const targetExercise = exercises[newIndex]
-
+    
     updateExerciseOrder(exercise.id, targetExercise.exercise_order)
     updateExerciseOrder(targetExercise.id, exercise.exercise_order)
   }

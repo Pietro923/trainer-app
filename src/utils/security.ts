@@ -37,7 +37,6 @@ export const canTrainerAccessClient = async (
       data: client 
     }
   } catch (error) {
-    console.error('Error checking trainer-client access:', error)
     return { 
       success: false, 
       error: 'Error al verificar permisos' 
@@ -70,7 +69,6 @@ export const canClientAccessRoutine = async (
       data: routine 
     }
   } catch (error) {
-    console.error('Error checking client-routine access:', error)
     return { 
       success: false, 
       error: 'Error al verificar permisos' 
@@ -103,7 +101,6 @@ export const canTrainerModifyRoutine = async (
       data: routine 
     }
   } catch (error) {
-    console.error('Error checking trainer-routine modify access:', error)
     return { 
       success: false, 
       error: 'Error al verificar permisos' 
@@ -136,7 +133,6 @@ export const canTrainerModifyMealPlan = async (
       data: mealPlan 
     }
   } catch (error) {
-    console.error('Error checking trainer-meal plan access:', error)
     return { 
       success: false, 
       error: 'Error al verificar permisos' 
@@ -193,7 +189,6 @@ export const validateAndSanitizeUrl = (url: string, type: 'video' | 'image'): st
     
     return urlObj.toString()
   } catch (error) {
-    console.error('Invalid URL:', url, error)
     return null
   }
 }
@@ -230,7 +225,6 @@ export const checkResourceLimits = async (userId: string, role: 'trainer' | 'cli
 
     return { success: true }
   } catch (error) {
-    console.error('Error checking resource limits:', error)
     return { success: true } // En caso de error, permitir la operación
   }
 }

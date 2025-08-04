@@ -29,7 +29,6 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error boundary caught:', error, errorInfo)
     this.setState({
       error,
       errorInfo
@@ -41,12 +40,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   logErrorToService = (error: Error, errorInfo: any) => {
     // Implementar integración con Sentry, LogRocket, etc.
-    console.error('Error logged to service:', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString()
-    })
+    // En producción, aquí enviarías el error a tu servicio de monitoreo
   }
 
   handleReset = () => {
@@ -74,18 +68,6 @@ class ErrorBoundary extends Component<Props, State> {
               <p className="text-gray-600">
                 Se produjo un error inesperado. Nuestro equipo ha sido notificado.
               </p>
-              
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="text-left">
-                  <summary className="cursor-pointer text-sm text-gray-500 mb-2">
-                    Detalles del error (solo en desarrollo)
-                  </summary>
-                  <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
-                    {this.state.error.message}
-                    {this.state.error.stack}
-                  </pre>
-                </details>
-              )}
 
               <div className="space-y-2">
                 <Button 
