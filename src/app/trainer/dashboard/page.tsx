@@ -136,7 +136,7 @@ export default function TrainerDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando dashboard...</p>
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function TrainerDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 gap-4">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Dumbbell className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -158,7 +158,7 @@ export default function TrainerDashboard() {
                   Panel de Entrenador
                 </h1>
                 <p className="text-gray-600">
-                  Bienvenido, <span className="font-medium text-red-600">{profile?.full_name}</span>
+                  Bienvenido, <span className="font-medium text-orange-600">{profile?.full_name}</span>
                 </p>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function TrainerDashboard() {
               <Button 
                 variant="outline" 
                 onClick={signOut} 
-                className="w-full sm:w-auto border-gray-300 hover:border-red-300 hover:text-red-600 transition-all duration-200"
+                className="w-full sm:w-auto border-gray-300 hover:border-orange-300 hover:text-orange-600 transition-all duration-200"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Cerrar Sesión
@@ -179,14 +179,14 @@ export default function TrainerDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-all duration-200">
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-red-800">Total Clientes</CardTitle>
-              <Users className="h-5 w-5 text-red-600" />
+              <CardTitle className="text-sm font-medium text-orange-800">Total Clientes</CardTitle>
+              <Users className="h-5 w-5 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-900">{clients.length}</div>
-              <p className="text-xs text-red-700 mt-1">{activeClients} activos</p>
+              <div className="text-3xl font-bold text-orange-900">{clients.length}</div>
+              <p className="text-xs text-orange-700 mt-1">{activeClients} activos</p>
             </CardContent>
           </Card>
 
@@ -227,10 +227,10 @@ export default function TrainerDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Template Management */}
-          <Card className="border-0 bg-gradient-to-br from-white via-gray-50/50 to-red-50/30 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+          <Card className="border-0 bg-gradient-to-br from-white via-gray-50/50 to-orange-50/30 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
   <CardHeader className="pb-6">
     <div className="flex items-center space-x-3">
-      <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
         <Target className="w-6 h-6 text-white" />
       </div>
       <div>
@@ -307,7 +307,7 @@ export default function TrainerDashboard() {
         </div>
         
         {/* Shine Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transpaorangent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
       </div>
     </div>
   </CardContent>
@@ -317,7 +317,7 @@ export default function TrainerDashboard() {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader>
               <CardTitle className="text-xl text-gray-900 flex items-center">
-                <Star className="w-5 h-5 mr-2 text-red-600" />
+                <Star className="w-5 h-5 mr-2 text-orange-600" />
                 Templates Recientes
               </CardTitle>
               <CardDescription className="text-gray-600">
@@ -395,7 +395,7 @@ export default function TrainerDashboard() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <CardTitle className="text-xl text-gray-900 flex items-center">
-                  <Users className="w-5 h-5 mr-2 text-red-600" />
+                  <Users className="w-5 h-5 mr-2 text-orange-600" />
                   Gestión de Clientes
                 </CardTitle>
                 <CardDescription className="text-gray-600">
@@ -411,7 +411,7 @@ export default function TrainerDashboard() {
                     placeholder="Buscar clientes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-full sm:w-64 border-gray-300 focus:border-red-500 focus:ring-red-500/20"
+                    className="pl-10 w-full sm:w-64 border-gray-300 focus:border-orange-500 focus:ring-orange-500/20"
                   />
                 </div>
                 <Button
@@ -422,7 +422,7 @@ export default function TrainerDashboard() {
                                      filterStatus === 'active' ? 'inactive' : 'all'
                     setFilterStatus(nextFilter)
                   }}
-                  className="border-gray-300 hover:border-red-300 hover:text-red-600"
+                  className="border-gray-300 hover:border-orange-300 hover:text-orange-600"
                 >
                   <Filter className="w-4 h-4 mr-2" />
                   {filterStatus === 'all' ? 'Todos' : 
@@ -451,8 +451,8 @@ export default function TrainerDashboard() {
                   >
                     {/* Client Info */}
                     <div className="flex items-start space-x-4 mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <span className="text-red-700 font-semibold text-lg">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span className="text-orange-700 font-semibold text-lg">
                           {client?.full_name?.[0]?.toUpperCase() || 'C'}
                         </span>
                       </div>
@@ -487,7 +487,7 @@ export default function TrainerDashboard() {
                             onCheckedChange={() => 
                               toggleClientStatus(client.id, client?.active || false)
                             }
-                            className="data-[state=checked]:bg-red-600"
+                            className="data-[state=checked]:bg-orange-600"
                           />
                         </div>
                         <div className="flex items-center space-x-2 text-xs text-gray-500">

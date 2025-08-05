@@ -245,7 +245,7 @@ export default function ClientMeals() {
                               variant="outline" 
                               size="sm"
                               onClick={() => deleteMealPlan(meal.id)}
-                              className="text-red-600 hover:text-red-700"
+                              className="text-orange-600 hover:text-orange-700"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>

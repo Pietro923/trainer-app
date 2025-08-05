@@ -84,8 +84,8 @@ function ConfirmEmailContent() {
 
           {status === 'error' && (
             <div className="space-y-4">
-              <XCircle className="w-16 h-16 text-red-600 mx-auto" />
-              <p className="text-red-700 font-medium">{message}</p>
+              <XCircle className="w-16 h-16 text-orange-600 mx-auto" />
+              <p className="text-orange-700 font-medium">{message}</p>
               <Button onClick={() => router.push('/')} variant="outline" className="w-full">
                 Volver al Login
               </Button>

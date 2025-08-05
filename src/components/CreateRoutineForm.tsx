@@ -137,11 +137,11 @@ export default function CreateRoutineForm({
           value={formData.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
           placeholder="Ej: Entrenamiento de Pecho Intenso"
-          className={errors.name ? 'border-red-500' : ''}
+          className={errors.name ? 'border-orange-500' : ''}
           required
         />
         {errors.name && (
-          <p className="text-sm text-red-600 mt-1">{errors.name}</p>
+          <p className="text-sm text-orange-600 mt-1">{errors.name}</p>
         )}
       </div>
 
@@ -151,7 +151,7 @@ export default function CreateRoutineForm({
           value={formData.week_day} 
           onValueChange={(value) => handleInputChange('week_day', value)}
         >
-          <SelectTrigger className={errors.week_day ? 'border-red-500' : ''}>
+          <SelectTrigger className={errors.week_day ? 'border-orange-500' : ''}>
             <SelectValue placeholder="Selecciona un día" />
           </SelectTrigger>
           <SelectContent>
@@ -163,7 +163,7 @@ export default function CreateRoutineForm({
           </SelectContent>
         </Select>
         {errors.week_day && (
-          <p className="text-sm text-red-600 mt-1">{errors.week_day}</p>
+          <p className="text-sm text-orange-600 mt-1">{errors.week_day}</p>
         )}
       </div>
 
@@ -173,7 +173,7 @@ export default function CreateRoutineForm({
           value={formData.muscle_group} 
           onValueChange={(value) => handleInputChange('muscle_group', value)}
         >
-          <SelectTrigger className={errors.muscle_group ? 'border-red-500' : ''}>
+          <SelectTrigger className={errors.muscle_group ? 'border-orange-500' : ''}>
             <SelectValue placeholder="Selecciona grupo muscular" />
           </SelectTrigger>
           <SelectContent>
@@ -185,7 +185,7 @@ export default function CreateRoutineForm({
           </SelectContent>
         </Select>
         {errors.muscle_group && (
-          <p className="text-sm text-red-600 mt-1">{errors.muscle_group}</p>
+          <p className="text-sm text-orange-600 mt-1">{errors.muscle_group}</p>
         )}
       </div>
 

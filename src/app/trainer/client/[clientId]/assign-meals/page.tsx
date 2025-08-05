@@ -180,7 +180,7 @@ export default function AssignMealsPage() {
 
   const getGoalColor = (goal: string | null) => {
     switch (goal) {
-      case 'definicion': return 'bg-red-100 text-red-800 border-red-200'
+      case 'definicion': return 'bg-orange-100 text-orange-800 border-orange-200'
       case 'volumen': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'mantenimiento': return 'bg-green-100 text-green-800 border-green-200'
       case 'perdida_peso': return 'bg-orange-100 text-orange-800 border-orange-200'
@@ -202,7 +202,7 @@ export default function AssignMealsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando asignaciones...</p>
         </div>
       </div>
@@ -221,7 +221,7 @@ export default function AssignMealsPage() {
               <Button 
                 variant="ghost" 
                 onClick={() => router.push('/trainer/dashboard')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
+                className="p-2 hover:bg-orange-50 hover:text-orange-600"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -441,7 +441,7 @@ export default function AssignMealsPage() {
               variant="outline"
               size="sm"
               onClick={() => handleRemoveAssignment(currentAssignment.id)}
-              className="flex-1 sm:flex-none lg:w-24 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
+              className="flex-1 sm:flex-none lg:w-24 text-orange-600 hover:text-orange-700 hover:bg-orange-50 text-xs sm:text-sm"
             >
               <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               Remover

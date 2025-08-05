@@ -190,7 +190,7 @@ export default function ClientDashboard() {
             e.stopPropagation() // ← AGREGAR ESTO
             openMedia('video', exercise.video_url!)
             }}
-            className="text-xs border-red-200 hover:border-red-300 hover:bg-red-50 text-red-600"
+            className="text-xs border-orange-200 hover:border-orange-300 hover:bg-orange-50 text-orange-600"
           >
             <Play className="w-3 h-3 mr-1" />
             Ver Video
@@ -204,7 +204,7 @@ export default function ClientDashboard() {
             e.stopPropagation() // ← AGREGAR ESTO
             openMedia('image', exercise.image_url!)
             }}
-            className="text-xs border-red-200 hover:border-red-300 hover:bg-red-50 text-red-600"
+            className="text-xs border-orange-200 hover:border-orange-300 hover:bg-orange-50 text-orange-600"
           >
             <ImageIcon className="w-3 h-3 mr-1" />
             Ver Imagen
@@ -303,7 +303,7 @@ export default function ClientDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando tu entrenamiento...</p>
         </div>
       </div>
@@ -322,13 +322,13 @@ export default function ClientDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 gap-4">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Target className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Mi Entrenamiento</h1>
                 <p className="text-gray-600">
-                  Bienvenido, <span className="font-medium text-red-600">{profile?.full_name}</span>
+                  Bienvenido, <span className="font-medium text-orange-600">{profile?.full_name}</span>
                 </p>
                 <p className="text-sm text-green-600 font-medium mt-1">{getMotivationalMessage()}</p>
               </div>
@@ -337,7 +337,7 @@ export default function ClientDashboard() {
               <Button 
                 variant="outline" 
                 onClick={signOut} 
-                className="w-full sm:w-auto border-gray-300 hover:border-red-300 hover:text-red-600 transition-all duration-200"
+                className="w-full sm:w-auto border-gray-300 hover:border-orange-300 hover:text-orange-600 transition-all duration-200"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Cerrar Sesión
@@ -350,27 +350,27 @@ export default function ClientDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Progress Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-all duration-200">
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-red-800">Progreso Hoy</CardTitle>
+              <CardTitle className="text-sm font-medium text-orange-800">Progreso Hoy</CardTitle>
               <div className="relative">
-                <TrendingUp className="h-5 w-5 text-red-600" />
+                <TrendingUp className="h-5 w-5 text-orange-600" />
                 {completionPercentage === 100 && (
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                 )}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-900">{completionPercentage}%</div>
+              <div className="text-3xl font-bold text-orange-900">{completionPercentage}%</div>
               <div className="flex items-center mt-2">
-                <div className="w-full bg-red-200 rounded-full h-2">
+                <div className="w-full bg-orange-200 rounded-full h-2">
                   <div 
-                    className="bg-red-600 h-2 rounded-full transition-all duration-500"
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${completionPercentage}%` }}
                   ></div>
                 </div>
               </div>
-              <p className="text-xs text-red-700 mt-1">Ejercicios completados</p>
+              <p className="text-xs text-orange-700 mt-1">Ejercicios completados</p>
             </CardContent>
           </Card>
 
@@ -443,7 +443,7 @@ export default function ClientDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl text-gray-900 flex items-center">
-                  <Calendar className="w-5 h-5 mr-2 text-red-600" />
+                  <Calendar className="w-5 h-5 mr-2 text-orange-600" />
                   Calendario Semanal
                 </CardTitle>
                 <CardDescription className="text-gray-600">
@@ -455,7 +455,7 @@ export default function ClientDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigateDay('prev')}
-                  className="border-gray-300 hover:border-red-300 hover:text-red-600"
+                  className="border-gray-300 hover:border-orange-300 hover:text-orange-600"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
@@ -463,7 +463,7 @@ export default function ClientDashboard() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigateDay('next')}
-                  className="border-gray-300 hover:border-red-300 hover:text-red-600"
+                  className="border-gray-300 hover:border-orange-300 hover:text-orange-600"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -485,10 +485,10 @@ export default function ClientDashboard() {
                     className={`
                       flex flex-col py-4 h-auto text-sm px-2 relative transition-all duration-200
                       ${isSelected 
-                        ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg border-red-600' 
-                        : 'border-gray-300 hover:border-red-300 hover:bg-red-50 hover:text-red-600'
+                        ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg border-orange-600' 
+                        : 'border-gray-300 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-600'
                       }
-                      ${isToday && !isSelected ? 'border-red-400 bg-red-50 text-red-700' : ''}
+                      ${isToday && !isSelected ? 'border-orange-400 bg-orange-50 text-orange-700' : ''}
                     `}
                     onClick={() => setSelectedDay(day.value)}
                   >
@@ -499,7 +499,7 @@ export default function ClientDashboard() {
                     {hasRoutines && dayProgress > 0 && (
                       <div className={`w-full h-1 rounded-full mt-2 ${isSelected ? 'bg-white/30' : 'bg-gray-200'}`}>
                         <div 
-                          className={`h-1 rounded-full transition-all duration-300 ${isSelected ? 'bg-white' : 'bg-red-500'}`}
+                          className={`h-1 rounded-full transition-all duration-300 ${isSelected ? 'bg-white' : 'bg-orange-500'}`}
                           style={{ width: `${dayProgress}%` }}
                         ></div>
                       </div>
@@ -507,7 +507,7 @@ export default function ClientDashboard() {
                     
                     <div className="flex space-x-1 mt-2">
                       {hasRoutines && (
-                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-red-500'}`}></div>
+                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-orange-500'}`}></div>
                       )}
                     </div>
                   </Button>
@@ -523,7 +523,7 @@ export default function ClientDashboard() {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
-                <Dumbbell className="w-5 h-5 mr-2 text-red-600" />
+                <Dumbbell className="w-5 h-5 mr-2 text-orange-600" />
                 Rutinas de {getCurrentDayName()}
               </CardTitle>
               <CardDescription className="text-gray-600">
@@ -552,7 +552,7 @@ export default function ClientDashboard() {
                         <div>
                           <h3 className="font-semibold text-lg text-gray-900">{assignment.template.name}</h3>
                           <div className="flex items-center space-x-2 mt-2">
-                            <Badge className="bg-red-100 text-red-800 border-red-200">
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-200">
                               {assignment.template.muscle_group}
                             </Badge>
                             {assignment.template.difficulty_level && (
@@ -593,7 +593,7 @@ export default function ClientDashboard() {
                                     p-4 rounded-lg border transition-all duration-200 cursor-pointer
                                     ${isCompleted 
                                       ? 'bg-green-50 border-green-200 transform scale-[0.98]' 
-                                      : 'bg-white border-gray-200 hover:border-red-200 hover:bg-red-50 hover:transform hover:scale-[1.01]'
+                                      : 'bg-white border-gray-200 hover:border-orange-200 hover:bg-orange-50 hover:transform hover:scale-[1.01]'
                                     }
                                   `}
                                   onClick={() => toggleExerciseCompletion(exercise.id)}
@@ -604,7 +604,7 @@ export default function ClientDashboard() {
                                         w-6 h-6 rounded-full border-2 flex items-center justify-center mt-1 transition-all duration-200
                                         ${isCompleted 
                                           ? 'border-green-500 bg-green-500 transform scale-110' 
-                                          : 'border-gray-300 hover:border-red-400'
+                                          : 'border-gray-300 hover:border-orange-400'
                                         }
                                       `}>
                                         {isCompleted && <CheckCircle className="w-4 h-4 text-white" />}
@@ -656,7 +656,7 @@ export default function ClientDashboard() {
           <Card className="hover:shadow-lg transition-all duration-200">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
-                <Utensils className="w-5 h-5 mr-2 text-red-600" />
+                <Utensils className="w-5 h-5 mr-2 text-orange-600" />
                 Planes Alimenticios Asignados
               </CardTitle>
               <CardDescription className="text-gray-600">
@@ -753,7 +753,7 @@ export default function ClientDashboard() {
                                     <div className="flex items-center space-x-4 text-xs bg-white p-2 rounded">
                                       {meal.macros.protein && (
                                         <div className="flex items-center">
-                                          <div className="w-2 h-2 bg-red-400 rounded-full mr-1"></div>
+                                          <div className="w-2 h-2 bg-orange-400 rounded-full mr-1"></div>
                                           <span>Prot: {meal.macros.protein}g</span>
                                         </div>
                                       )}
@@ -829,7 +829,7 @@ export default function ClientDashboard() {
             <Button 
               variant="outline" 
               onClick={() => window.open(mediaModal.url, '_blank')}
-              className="border-red-300 hover:border-red-400 hover:bg-red-50 text-red-600"
+              className="border-orange-300 hover:border-orange-400 hover:bg-orange-50 text-orange-600"
             >
               Abrir en nueva pestaña
             </Button>

@@ -226,7 +226,7 @@ export default function RoutineTemplatesPage() {
     switch (difficulty) {
       case 'principiante': return 'bg-green-100 text-green-800 border-green-200'
       case 'intermedio': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'avanzado': return 'bg-red-100 text-red-800 border-red-200'
+      case 'avanzado': return 'bg-orange-100 text-orange-800 border-orange-200'
       default: return 'bg-gray-100 text-gray-600 border-gray-200'
     }
   }
@@ -235,7 +235,7 @@ export default function RoutineTemplatesPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando templates...</p>
         </div>
       </div>
@@ -252,7 +252,7 @@ export default function RoutineTemplatesPage() {
   <Button 
     variant="ghost" 
     onClick={() => router.push('/trainer/dashboard')}
-    className="p-2 hover:bg-red-50 hover:text-red-600 flex-shrink-0"
+    className="p-2 hover:bg-orange-50 hover:text-orange-600 flex-shrink-0"
   >
     <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
   </Button>
@@ -552,7 +552,7 @@ export default function RoutineTemplatesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteTemplate(template.id, template.name)}
-                          className="hover:bg-red-50 hover:text-red-600"
+                          className="hover:bg-orange-50 hover:text-orange-600"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

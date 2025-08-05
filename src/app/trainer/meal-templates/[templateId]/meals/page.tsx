@@ -457,7 +457,7 @@ export default function TemplateMealsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando comidas...</p>
         </div>
       </div>
@@ -487,7 +487,7 @@ export default function TemplateMealsPage() {
               <Button 
                 variant="ghost" 
                 onClick={() => router.push('/trainer/meal-templates')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
+                className="p-2 hover:bg-orange-50 hover:text-orange-600"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -650,7 +650,7 @@ export default function TemplateMealsPage() {
                         variant="outline" 
                         size="sm"
                         onClick={() => handleDeleteMeal(meal.id, meal.name)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-orange-600 hover:text-orange-700"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -678,7 +678,7 @@ export default function TemplateMealsPage() {
                         )}
                         {meal.macros?.protein && (
                           <div className="text-center p-2 bg-white rounded border">
-                            <p className="font-semibold text-lg text-red-600">{meal.macros.protein}g</p>
+                            <p className="font-semibold text-lg text-orange-600">{meal.macros.protein}g</p>
                             <p className="text-gray-600 text-xs">Proteínas</p>
                           </div>
                         )}

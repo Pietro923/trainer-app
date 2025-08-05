@@ -199,7 +199,7 @@ export default function AssignRoutinesPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando asignaciones...</p>
         </div>
       </div>
@@ -216,12 +216,12 @@ export default function AssignRoutinesPage() {
               <Button 
                 variant="ghost" 
                 onClick={() => router.push('/trainer/dashboard')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
+                className="p-2 hover:bg-orange-50 hover:text-orange-600"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -355,8 +355,8 @@ export default function AssignRoutinesPage() {
         <Card className="mb-8">
           <CardHeader>
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center">
-                <User className="w-8 h-8 text-red-700" />
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl flex items-center justify-center">
+                <User className="w-8 h-8 text-orange-700" />
               </div>
               <div>
                 <CardTitle className="text-xl">{client?.full_name}</CardTitle>
@@ -375,7 +375,7 @@ export default function AssignRoutinesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Calendar className="w-5 h-5 mr-2 text-red-600" />
+              <Calendar className="w-5 h-5 mr-2 text-orange-600" />
               Rutinas Semanales Asignadas
             </CardTitle>
             <CardDescription>
@@ -449,7 +449,7 @@ export default function AssignRoutinesPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleRemoveAssignment(assignment.id, day.label)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

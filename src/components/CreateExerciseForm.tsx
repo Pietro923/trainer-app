@@ -287,10 +287,10 @@ export default function CreateExerciseForm({
               onChange={(e) => handleInputChange('video_url', e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
               disabled={loading}
-              className={formData.video_url && !isValidUrl(formData.video_url) ? 'border-red-500' : ''}
+              className={formData.video_url && !isValidUrl(formData.video_url) ? 'border-orange-500' : ''}
             />
             {formData.video_url && !isValidUrl(formData.video_url) && (
-              <p className="text-sm text-red-600 mt-1">URL no válida</p>
+              <p className="text-sm text-orange-600 mt-1">URL no válida</p>
             )}
           </div>
 
@@ -303,10 +303,10 @@ export default function CreateExerciseForm({
               onChange={(e) => handleInputChange('image_url', e.target.value)}
               placeholder="https://ejemplo.com/imagen.jpg"
               disabled={loading}
-              className={formData.image_url && !isValidUrl(formData.image_url) ? 'border-red-500' : ''}
+              className={formData.image_url && !isValidUrl(formData.image_url) ? 'border-orange-500' : ''}
             />
             {formData.image_url && !isValidUrl(formData.image_url) && (
-              <p className="text-sm text-red-600 mt-1">URL no válida</p>
+              <p className="text-sm text-orange-600 mt-1">URL no válida</p>
             )}
           </div>
         </div>

@@ -33,7 +33,7 @@ export default function HomePage() {
   // Si hay usuario pero está inactivo, mostrar mensaje
   if (user && profile && profile.role === 'client' && !profile.active) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-gray-50 to-red-100 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-gray-50 to-orange-100 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute inset-0" style={{
@@ -43,7 +43,7 @@ export default function HomePage() {
 
         <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-lg animate-scale-in">
           <CardHeader className="text-center pb-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Zap className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
@@ -54,11 +54,11 @@ export default function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center pt-4">
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-              <p className="text-red-700 font-medium mb-2">
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+              <p className="text-orange-700 font-medium mb-2">
                 🚫 Cuenta Inactiva
               </p>
-              <p className="text-red-600 text-sm">
+              <p className="text-orange-600 text-sm">
                 Por favor contacta a tu entrenador para reactivar tu acceso.
               </p>
             </div>
@@ -67,7 +67,7 @@ export default function HomePage() {
                 router.push('/')
                 window.location.reload()
               }}
-              className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white font-medium py-3 px-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-3 px-6 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 transform hover:scale-[1.02] shadow-lg"
             >
               Volver al Login
             </button>
@@ -84,11 +84,11 @@ export default function HomePage() {
 
   // Mostrar formulario de login
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-gray-50 to-red-100 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-gray-50 to-orange-100 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decorations */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Gradient Orbs */}
-        <div className="absolute -top-32 -left-32 w-64 h-64 bg-gradient-to-br from-red-200/30 to-red-300/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -top-32 -left-32 w-64 h-64 bg-gradient-to-br from-orange-200/30 to-orange-300/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-gradient-to-br from-gray-200/30 to-gray-300/20 rounded-full blur-3xl animate-pulse delay-1000" />
         
         {/* Grid Pattern */}
@@ -104,7 +104,7 @@ export default function HomePage() {
         <div className="hidden lg:block space-y-8 animate-fade-in">
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Dumbbell className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -134,8 +134,8 @@ export default function HomePage() {
             {/* Features */}
             <div className="grid grid-cols-1 gap-4">
               <div className="flex items-center space-x-3 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Seguimiento Avanzado</h3>
@@ -144,8 +144,8 @@ export default function HomePage() {
               </div>
               
               <div className="flex items-center space-x-3 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-200/50">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Gestión de Clientes</h3>
@@ -162,7 +162,7 @@ export default function HomePage() {
             <CardHeader className="text-center pb-6">
               {/* Mobile logo */}
               <div className="lg:hidden flex items-center justify-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Dumbbell className="w-6 h-6 text-white" />
                 </div>
                 <div className="text-left">

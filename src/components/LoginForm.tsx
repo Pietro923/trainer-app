@@ -1,4 +1,4 @@
-// components/LoginForm.tsx - Enhanced with Red/Gray Theme
+// components/LoginForm.tsx - Enhanced with orange/Gray Theme
 'use client'
 
 import { useState } from 'react'
@@ -118,7 +118,7 @@ export default function LoginForm() {
                   value={signInData.email}
                   onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="tu@email.com"
-                  className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-red-500 focus:ring-red-500/20 rounded-xl transition-all duration-200"
+                  className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl transition-all duration-200"
                   required
                   disabled={loading}
                 />
@@ -137,7 +137,7 @@ export default function LoginForm() {
                   value={signInData.password}
                   onChange={(e) => setSignInData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Tu contraseña"
-                  className="pl-10 pr-12 h-12 bg-gray-50 border-gray-200 focus:border-red-500 focus:ring-red-500/20 rounded-xl transition-all duration-200"
+                  className="pl-10 pr-12 h-12 bg-gray-50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl transition-all duration-200"
                   required
                   disabled={loading}
                 />
@@ -152,9 +152,9 @@ export default function LoginForm() {
             </div>
 
             {error && (
-              <Alert className="border-red-200 bg-red-50 animate-slide-up">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-700">
+              <Alert className="border-orange-200 bg-orange-50 animate-slide-up">
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-700">
                   {error}
                 </AlertDescription>
               </Alert>
@@ -171,7 +171,7 @@ export default function LoginForm() {
 
             <Button 
               type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]" 
+              className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]" 
               disabled={loading}
             >
               {loading ? (
@@ -200,7 +200,7 @@ export default function LoginForm() {
                   value={signUpData.fullName}
                   onChange={(e) => setSignUpData(prev => ({ ...prev, fullName: e.target.value }))}
                   placeholder="Tu nombre completo"
-                  className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-red-500 focus:ring-red-500/20 rounded-xl transition-all duration-200"
+                  className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl transition-all duration-200"
                   required
                   disabled={loading}
                 />
@@ -219,7 +219,7 @@ export default function LoginForm() {
                   value={signUpData.email}
                   onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="tu@email.com"
-                  className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-red-500 focus:ring-red-500/20 rounded-xl transition-all duration-200"
+                  className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl transition-all duration-200"
                   required
                   disabled={loading}
                 />
@@ -238,7 +238,7 @@ export default function LoginForm() {
                   value={signUpData.password}
                   onChange={(e) => setSignUpData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Mínimo 6 caracteres"
-                  className="pl-10 pr-12 h-12 bg-gray-50 border-gray-200 focus:border-red-500 focus:ring-red-500/20 rounded-xl transition-all duration-200"
+                  className="pl-10 pr-12 h-12 bg-gray-50 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl transition-all duration-200"
                   required
                   disabled={loading}
                   minLength={6}
@@ -254,9 +254,9 @@ export default function LoginForm() {
             </div>
 
             {error && (
-              <Alert className="border-red-200 bg-red-50 animate-slide-up">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-700">
+              <Alert className="border-orange-200 bg-orange-50 animate-slide-up">
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-700">
                   {error}
                 </AlertDescription>
               </Alert>
@@ -273,7 +273,7 @@ export default function LoginForm() {
 
             <Button 
               type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]" 
+              className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]" 
               disabled={loading}
             >
               {loading ? (
@@ -305,7 +305,7 @@ export default function LoginForm() {
           ¿Necesitas ayuda? {" "}
           <a 
             href="mailto:jpbonacossa@gmail.com" 
-            className="text-red-600 hover:text-red-700 font-medium transition-colors"
+            className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
           >
             Contacta soporte
           </a>

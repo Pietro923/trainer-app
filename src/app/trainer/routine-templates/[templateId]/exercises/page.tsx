@@ -152,11 +152,11 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
             value={formData.video_url}
             onChange={(e) => handleInputChange('video_url', e.target.value)}
             placeholder="https://youtube.com/watch?v=..."
-            className={formData.video_url && !isValidUrl(formData.video_url) ? 'border-red-500' : ''}
+            className={formData.video_url && !isValidUrl(formData.video_url) ? 'border-orange-500' : ''}
             disabled={formLoading}
           />
           {formData.video_url && !isValidUrl(formData.video_url) && (
-            <p className="text-sm text-red-600 mt-1">URL no válida</p>
+            <p className="text-sm text-orange-600 mt-1">URL no válida</p>
           )}
         </div>
         
@@ -168,11 +168,11 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({
             value={formData.image_url}
             onChange={(e) => handleInputChange('image_url', e.target.value)}
             placeholder="https://ejemplo.com/imagen.jpg"
-            className={formData.image_url && !isValidUrl(formData.image_url) ? 'border-red-500' : ''}
+            className={formData.image_url && !isValidUrl(formData.image_url) ? 'border-orange-500' : ''}
             disabled={formLoading}
           />
           {formData.image_url && !isValidUrl(formData.image_url) && (
-            <p className="text-sm text-red-600 mt-1">URL no válida</p>
+            <p className="text-sm text-orange-600 mt-1">URL no válida</p>
           )}
         </div>
       </div>
@@ -432,7 +432,7 @@ export default function TemplateExercisesPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando ejercicios...</p>
         </div>
       </div>
@@ -462,7 +462,7 @@ export default function TemplateExercisesPage() {
   <Button 
     variant="ghost" 
     onClick={() => router.push('/trainer/routine-templates')}
-    className="p-2 hover:bg-red-50 hover:text-red-600 flex-shrink-0"
+    className="p-2 hover:bg-orange-50 hover:text-orange-600 flex-shrink-0"
   >
     <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
   </Button>
@@ -629,7 +629,7 @@ export default function TemplateExercisesPage() {
                         variant="outline" 
                         size="sm"
                         onClick={() => handleDeleteExercise(exercise.id, exercise.name)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-orange-600 hover:text-orange-700"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

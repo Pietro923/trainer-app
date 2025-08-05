@@ -220,7 +220,7 @@ export default function MealTemplatesPage() {
 
   const getGoalColor = (goal: string | null) => {
     switch (goal) {
-      case 'definicion': return 'bg-red-100 text-red-800 border-red-200'
+      case 'definicion': return 'bg-orange-100 text-orange-800 border-orange-200'
       case 'volumen': return 'bg-blue-100 text-blue-800 border-blue-200'
       case 'mantenimiento': return 'bg-green-100 text-green-800 border-green-200'
       case 'perdida_peso': return 'bg-orange-100 text-orange-800 border-orange-200'
@@ -237,7 +237,7 @@ export default function MealTemplatesPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando templates...</p>
         </div>
       </div>
@@ -254,7 +254,7 @@ export default function MealTemplatesPage() {
               <Button 
                 variant="ghost" 
                 onClick={() => router.push('/trainer/dashboard')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
+                className="p-2 hover:bg-orange-50 hover:text-orange-600"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -501,7 +501,7 @@ export default function MealTemplatesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteTemplate(template.id, template.name)}
-                          className="hover:bg-red-50 hover:text-red-600"
+                          className="hover:bg-orange-50 hover:text-orange-600"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

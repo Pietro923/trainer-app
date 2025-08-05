@@ -30,7 +30,7 @@ type RoutineWithExercises = Routine & {
 }
 
 const DAYS_OF_WEEK = [
-  { value: 1, label: 'Lunes', short: 'Lun', color: 'bg-red-50 text-red-700 border-red-200' },
+  { value: 1, label: 'Lunes', short: 'Lun', color: 'bg-orange-50 text-orange-700 border-orange-200' },
   { value: 2, label: 'Martes', short: 'Mar', color: 'bg-orange-50 text-orange-700 border-orange-200' },
   { value: 3, label: 'Miércoles', short: 'Mié', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   { value: 4, label: 'Jueves', short: 'Jue', color: 'bg-green-50 text-green-700 border-green-200' },
@@ -144,7 +144,7 @@ export default function ClientRoutines() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Cargando rutinas...</p>
         </div>
       </div>
@@ -164,12 +164,12 @@ export default function ClientRoutines() {
               <Button 
                 variant="ghost" 
                 onClick={() => router.push('/trainer/dashboard')}
-                className="p-2 hover:bg-red-50 hover:text-red-600"
+                className="p-2 hover:bg-orange-50 hover:text-orange-600"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                   <Target className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -208,14 +208,14 @@ export default function ClientRoutines() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 hover:shadow-lg transition-all duration-200">
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-all duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-red-800">Total de Rutinas</CardTitle>
-              <Dumbbell className="h-5 w-5 text-red-600" />
+              <CardTitle className="text-sm font-medium text-orange-800">Total de Rutinas</CardTitle>
+              <Dumbbell className="h-5 w-5 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-red-900">{stats.activeRoutines}</div>
-              <p className="text-xs text-red-700 mt-1">Rutinas activas</p>
+              <div className="text-3xl font-bold text-orange-900">{stats.activeRoutines}</div>
+              <p className="text-xs text-orange-700 mt-1">Rutinas activas</p>
             </CardContent>
           </Card>
 
@@ -379,7 +379,7 @@ export default function ClientRoutines() {
                           <Button 
                             variant="outline" 
                             onClick={() => router.push(`/trainer/routine/${routine.id}/exercises`)}
-                            className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                            className="hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600"
                           >
                             Editar Ejercicios
                           </Button>
@@ -393,7 +393,7 @@ export default function ClientRoutines() {
                           variant="outline" 
                           size="sm"
                           onClick={() => router.push(`/trainer/routine/${routine.id}/exercises`)}
-                          className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                          className="hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Agregar Ejercicios
@@ -441,7 +441,7 @@ export default function ClientRoutines() {
                                 {routine.active ? 'Activa' : 'Inactiva'}
                               </Badge>
                             </div>
-                            <CardTitle className="text-lg group-hover:text-red-600 transition-colors">
+                            <CardTitle className="text-lg group-hover:text-orange-600 transition-colors">
                               {routine.name}
                             </CardTitle>
                             <CardDescription className="text-gray-600">
@@ -452,7 +452,7 @@ export default function ClientRoutines() {
                             {routine.exercises.length > 0 ? (
                               <div className="space-y-4">
                                 <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-                                  <Dumbbell className="w-4 h-4 mr-2 text-red-500" />
+                                  <Dumbbell className="w-4 h-4 mr-2 text-orange-500" />
                                   {routine.exercises.length} ejercicio(s)
                                 </div>
                                 <div className="space-y-2">
@@ -480,7 +480,7 @@ export default function ClientRoutines() {
                                   variant="outline" 
                                   size="sm"
                                   onClick={() => router.push(`/trainer/routine/${routine.id}/exercises`)}
-                                  className="w-full hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-all duration-200"
+                                  className="w-full hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-all duration-200"
                                 >
                                   Editar Ejercicios
                                 </Button>
@@ -493,7 +493,7 @@ export default function ClientRoutines() {
                                   variant="outline" 
                                   size="sm"
                                   onClick={() => router.push(`/trainer/routine/${routine.id}/exercises`)}
-                                  className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                                  className="hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600"
                                 >
                                   <Plus className="w-4 h-4 mr-1" />
                                   Agregar
@@ -505,7 +505,7 @@ export default function ClientRoutines() {
                       ))}
                     </div>
                   ) : (
-                    <Card className="border-dashed border-2 border-gray-300 hover:border-red-300 transition-colors duration-200">
+                    <Card className="border-dashed border-2 border-gray-300 hover:border-orange-300 transition-colors duration-200">
                       <CardContent className="py-12 text-center">
                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Calendar className="w-8 h-8 text-gray-400" />
@@ -515,7 +515,7 @@ export default function ClientRoutines() {
                           variant="outline" 
                           size="sm"
                           onClick={() => setCreateRoutineOpen(true)}
-                          className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                          className="hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Crear Rutina
