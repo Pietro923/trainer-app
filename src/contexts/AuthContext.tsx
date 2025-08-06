@@ -140,69 +140,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Función de inicialización robusta con singleton pattern
   const initializeAuth = useCallback(async () => {
-    if (initializingRef.current || state.initialized) {
-      console.log('[Auth] Already initializing or initialized, skipping...')
-      return
-    }
-    
+  if (initializingRef.current || state.initialized) return
+  
+  initializingRef.current = true
+  
+  if (process.env.NODE_ENV === 'development') {
     console.log('[Auth] Starting initialization...')
-    initializingRef.current = true
+  }
 
-    try {
-      // Verificar sesión actual
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError) {
-        console.error('[Auth] Session error:', sessionError)
-        throw sessionError
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    
+    if (error) {
+      throw error
+    }
+
+    if (!mountedRef.current) return
+
+    if (session?.user) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Auth] Found existing session, fetching profile...')
       }
-
-      if (session?.user) {
-        console.log('[Auth] Active session found for user:', session.user.id)
-        
-        // Obtener perfil con retry
+      
+      try {
         const profile = await fetchProfile(session.user.id)
         
-        if (!mountedRef.current) return
-
-        setState({
+        setState(prev => ({
+          ...prev,
           user: session.user,
           profile,
           loading: false,
           initialized: true,
           error: null
-        })
-
-        console.log('[Auth] Initialization completed with user')
-      } else {
-        console.log('[Auth] No active session found')
+        }))
+      } catch (profileError) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Auth] Profile fetch failed:', profileError)
+        }
         
-        if (!mountedRef.current) return
-
-        setState({
-          user: null,
+        setState(prev => ({
+          ...prev,
+          user: session.user,
           profile: null,
           loading: false,
           initialized: true,
-          error: null
-        })
+          error: 'Error al cargar perfil'
+        }))
       }
-    } catch (error) {
-      console.error('[Auth] Initialization error:', error)
-      
-      if (!mountedRef.current) return
-
-      setState({
+    } else {
+      setState(prev => ({
+        ...prev,
         user: null,
         profile: null,
         loading: false,
         initialized: true,
-        error: error instanceof Error ? error.message : 'Error de inicialización'
-      })
-    } finally {
-      initializingRef.current = false
+        error: null
+      }))
     }
-  }, [fetchProfile, state.initialized])
+
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Auth] Initialization error:', error)
+    }
+    
+    setState(prev => ({
+      ...prev,
+      loading: false,
+      initialized: true,
+      error: error instanceof Error ? error.message : 'Error de inicialización'
+    }))
+  } finally {
+    initializingRef.current = false
+  }
+}, [fetchProfile, state.initialized])
 
   // Limpiar timeouts al desmontar
   useEffect(() => {
@@ -228,78 +238,93 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Configurar listener de cambios de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('[Auth] Auth state changed:', event, session?.user?.id)
-        
-        if (!mountedRef.current) return
+  async (event, session) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Auth] Auth state changed:', event, session?.user?.id)
+    }
+    
+    if (!mountedRef.current) return
 
-        try {
-          // Manejar diferentes eventos
-          switch (event) {
-            case 'SIGNED_IN':
-              if (session?.user) {
-                console.log('[Auth] User signed in, fetching profile...')
-                const profile = await fetchProfile(session.user.id)
-                
-                setState(prev => ({
-                  ...prev,
-                  user: session.user,
-                  profile,
-                  loading: false,
-                  error: null
-                }))
+    try {
+      switch (event) {
+        case 'SIGNED_IN':
+          if (session?.user) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Auth] User signed in, fetching profile...')
+            }
+            
+            const profile = await fetchProfile(session.user.id)
+            
+            setState(prev => ({
+              ...prev,
+              user: session.user,
+              profile,
+              loading: false,
+              error: null
+            }))
 
-                if (profile) {
-                  showSuccess(`¡Bienvenido, ${profile.full_name}!`)
-                }
-              }
-              break
-
-            case 'SIGNED_OUT':
-              console.log('[Auth] User signed out')
-              // Limpiar cache
-              profileCache.clear()
-              
-              setState(prev => ({
-                ...prev,
-                user: null,
-                profile: null,
-                loading: false,
-                error: null
-              }))
-              showSuccess('Sesión cerrada correctamente')
-              break
-
-            case 'TOKEN_REFRESHED':
-              console.log('[Auth] Token refreshed')
-              // No hacer nada especial, solo mantener la sesión
-              break
-
-            case 'USER_UPDATED':
-              if (session?.user) {
-                console.log('[Auth] User updated, refreshing profile...')
-                const profile = await fetchProfile(session.user.id)
-                setState(prev => ({
-                  ...prev,
-                  user: session.user,
-                  profile,
-                  error: null
-                }))
-              }
-              break
-
-            default:
-              console.log('[Auth] Unhandled auth event:', event)
+            if (profile) {
+              showSuccess(`¡Bienvenido, ${profile.full_name}!`)
+            }
           }
-        } catch (error) {
-          console.error('[Auth] Error handling auth state change:', error)
+          break
+
+        case 'SIGNED_OUT':
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Auth] User signed out')
+          }
+          
+          profileCache.clear()
+          
           setState(prev => ({
             ...prev,
-            error: error instanceof Error ? error.message : 'Error de autenticación'
+            user: null,
+            profile: null,
+            loading: false,
+            error: null
           }))
-        }
+          break
+
+        case 'TOKEN_REFRESHED':
+          // Solo log en desarrollo
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Auth] Token refreshed')
+          }
+          break
+
+        case 'USER_UPDATED':
+          if (session?.user) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Auth] User updated, refreshing profile...')
+            }
+            
+            const profile = await fetchProfile(session.user.id)
+            setState(prev => ({
+              ...prev,
+              user: session.user,
+              profile,
+              error: null
+            }))
+          }
+          break
+
+        default:
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Auth] Unhandled auth event:', event)
+          }
       }
-    )
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Auth] Error handling auth state change:', error)
+      }
+      
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Error de autenticación'
+      }))
+    }
+  }
+)
 
     sessionSubscriptionRef.current = subscription
 
@@ -396,22 +421,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Función de sign out mejorada
   const signOut = useCallback(async () => {
-    try {
+  try {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[Auth] Starting sign out process')
-      setState(prev => ({ ...prev, loading: true }))
-      
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      // Limpiar cache
-      profileCache.clear()
-      
-    } catch (error) {
-      console.error('[Auth] Error signing out:', error)
-      showError('Error al cerrar sesión')
-      setState(prev => ({ ...prev, loading: false }))
     }
-  }, [showError])
+    
+    setState(prev => ({ ...prev, loading: true }))
+    
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+
+    // Limpiar cache
+    profileCache.clear()
+    
+    // Forzar redirección al login
+    window.location.href = '/'
+    
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Auth] Error signing out:', error)
+    }
+    showError('Error al cerrar sesión')
+    setState(prev => ({ ...prev, loading: false }))
+  }
+}, [showError])
 
   // Función para refrescar perfil
   const refreshProfile = useCallback(async () => {
